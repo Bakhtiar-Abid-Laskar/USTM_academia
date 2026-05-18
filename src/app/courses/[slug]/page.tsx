@@ -27,10 +27,10 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
 
   if (!course) notFound();
 
-  // ✅ OPTIMIZED: Use aggregation to get document counts per semester in a single query
+  // ✅ OPTIMIZED: Fetch semesters with subjects to count documents
   const { data: semesters } = await supabase
     .from("semesters")
-    .select("*, documents(count)")
+    .select("*, subjects(id)")
     .eq("course_id", course.id)
     .eq("is_active", true)
     .order("semester_number");
@@ -71,25 +71,28 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {semesters.map((sem: any) => (
-                <Link key={sem.id} href={`/courses/${course.slug}/semester-${sem.semester_number}`}>
-                  <Card className="hover:shadow-md transition-shadow text-center h-full">
-                    <CardContent className="p-5">
-                      <div className="text-3xl font-bold text-primary mb-1">
-                        {sem.semester_number}<sup className="text-lg font-semibold">{getOrdinalSuffix(sem.semester_number)}</sup>
-                      </div>
-                      <p className="text-sm font-medium text-text-main mb-2">Semester</p>
-                      <div className="flex flex-col gap-1 text-xs text-text-muted">
-                        {sem.documents?.[0]?.count ? (
-                          <span>{sem.documents[0].count} documents</span>
-                        ) : (
-                          <span className="text-gray-400">No documents yet</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+              {semesters.map((sem: any) => {
+                const subjectCount = sem.subjects?.length || 0;
+                return (
+                  <Link key={sem.id} href={`/courses/${course.slug}/semester-${sem.semester_number}`}>
+                    <Card className="hover:shadow-md transition-shadow text-center h-full">
+                      <CardContent className="p-5">
+                        <div className="text-3xl font-bold text-primary mb-1">
+                          {sem.semester_number}<sup className="text-lg font-semibold">{getOrdinalSuffix(sem.semester_number)}</sup>
+                        </div>
+                        <p className="text-sm font-medium text-text-main mb-2">Semester</p>
+                        <div className="flex flex-col gap-1 text-xs text-text-muted">
+                          {subjectCount > 0 ? (
+                            <span>{subjectCount} subjects</span>
+                          ) : (
+                            <span className="text-gray-400">No subjects yet</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

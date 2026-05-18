@@ -38,10 +38,10 @@ export default async function SemesterSubjectsPage({
 
   if (!semester) notFound();
 
-  // ✅ OPTIMIZED: Use aggregation to get document counts per subject in a single query
+  // ✅ OPTIMIZED: Fetch subjects with document relationships to count locally
   const { data: subjects } = await supabase
     .from("subjects")
-    .select("*, documents(count, document_type_id)")
+    .select("*, documents(id, document_type_id)")
     .eq("course_id", course.id)
     .eq("semester_id", semester.id)
     .eq("is_active", true)
