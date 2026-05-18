@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 // GET — list all departments with counts (single query, no N+1)
 export async function GET() {
@@ -110,5 +111,9 @@ export async function DELETE(request: NextRequest) {
 
   const { error } = await adminClient.from("departments").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  
+  // Invalidate dashboard cache so deleted department disappears
+  revalidatePath("/admin/dashboard");
+  
   return NextResponse.json({ success: true });
 }

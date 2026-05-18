@@ -35,8 +35,11 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        // Single fetch — dashboard API now returns stats + departments
-        const res = await fetch("/api/admin/dashboard");
+        // Force fresh fetch with no-cache header - bypass browser cache
+        const res = await fetch("/api/admin/dashboard", {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache, no-store, must-revalidate" }
+        });
         const data = await res.json();
         if (data && typeof data === "object") {
           setStats(data);

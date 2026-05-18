@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 // GET — list courses, optionally filtered by department_id (single query, no N+1)
 export async function GET(request: NextRequest) {
@@ -145,5 +146,10 @@ export async function DELETE(request: NextRequest) {
 
   const { error } = await adminClient.from("courses").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  
+  // Invalidate caches so deleted course disappears from all admin pages
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin/departments");
+  
   return NextResponse.json({ success: true });
 }

@@ -73,9 +73,10 @@ export default function DepartmentDetailPage() {
   async function loadData() {
     setLoading(true);
     try {
+      // Force fresh fetch - no caching
       const [deptRes, coursesRes] = await Promise.all([
-        fetch(`/api/admin/departments`),
-        fetch(`/api/admin/courses?department_id=${departmentId}`),
+        fetch(`/api/admin/departments`, { cache: "no-store" }),
+        fetch(`/api/admin/courses?department_id=${departmentId}`, { cache: "no-store" }),
       ]);
       const allDepts = await deptRes.json();
       const coursesData = await coursesRes.json();
