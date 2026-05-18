@@ -133,3 +133,75 @@ html {
 .will-animate {
   opacity: 0;
 }
+
+/* ============================================================
+   SKELETON LOADING ANIMATIONS
+   ============================================================ */
+
+/* Shimmer effect for skeleton loaders */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Pulse effect for skeleton loaders */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    background-color: rgb(226, 232, 240);
+  }
+  50% {
+    opacity: 0.7;
+    background-color: rgb(203, 213, 225);
+  }
+}
+
+/* Apply shimmer animation to skeleton elements */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(241, 245, 249) 0%,
+    rgb(226, 232, 240) 25%,
+    rgb(241, 245, 249) 50%,
+    rgb(226, 232, 240) 75%,
+    rgb(241, 245, 249) 100%
+  );
+  background-size: 1000px 100%;
+  animation: skeleton-shimmer 2s infinite;
+}
+
+/* Apply pulse animation to skeleton elements */
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Rounded skeleton variation */
+.skeleton-rounded {
+  border-radius: 0.375rem;
+}
+
+/* Avatar skeleton (circular) */
+.skeleton-avatar {
+  border-radius: 9999px;
+  width: 40px;
+  height: 40px;
+  background-color: rgb(226, 232, 240);
+}
+
+.skeleton-avatar.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(241, 245, 249) 0%,
+    rgb(226, 232, 240) 25%,
+    rgb(241, 245, 249) 50%,
+    rgb(226, 232, 240) 75%,
+    rgb(241, 245, 249) 100%
+  );
+  background-size: 1000px 100%;
+  animation: skeleton-shimmer 2s infinite;
+}
