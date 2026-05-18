@@ -17,7 +17,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
 
   const { data: course } = await supabase
     .from("courses")
-    .select("*")
+    .select("*, department:departments(name)")
     .eq("slug", params.slug)
     .eq("is_active", true)
     .single();
@@ -48,6 +48,10 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
     }
   }
 
+  const deptName = typeof course.department === "object" && course.department
+    ? course.department.name
+    : course.department;
+
   return (
     <div className="flex flex-col min-h-screen">
       <PublicHeader />
@@ -65,7 +69,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
           <div className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-text-main mb-2">{course.short_name}</h1>
             <p className="text-text-muted">{course.name}</p>
-            {course.department && <Badge className="mt-2">{course.department}</Badge>}
+            {deptName && <Badge className="mt-2">{deptName}</Badge>}
           </div>
 
           <h2 className="text-lg font-semibold text-text-main mb-4 flex items-center gap-2">

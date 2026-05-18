@@ -11,7 +11,7 @@ export default async function HomePage() {
 
   const { data: courses } = await supabase
     .from("courses")
-    .select("*")
+    .select("*, department:departments(name)")
     .eq("is_active", true)
     .order("name")
     .limit(12);
@@ -72,20 +72,26 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {courses.map((course: any) => (
-                <Link key={course.id} href={`/courses/${course.slug}`}>
-                  <Card className="hover:shadow-md transition-shadow h-full">
-                    <CardContent className="p-5">
-                      <h3 className="font-semibold text-text-main mb-1">{course.short_name}</h3>
-                      <p className="text-sm text-text-muted mb-3 line-clamp-2">{course.name}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {course.department && <Badge>{course.department}</Badge>}
-                        <Badge variant="outline">{course.total_semesters} Sem</Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+              {courses.map((course: any) => {
+                const deptName = typeof course.department === "object" && course.department
+                  ? course.department.name
+                  : course.department;
+
+                return (
+                  <Link key={course.id} href={`/courses/${course.slug}`}>
+                    <Card className="hover:shadow-md transition-shadow h-full">
+                      <CardContent className="p-5">
+                        <h3 className="font-semibold text-text-main mb-1">{course.short_name}</h3>
+                        <p className="text-sm text-text-muted mb-3 line-clamp-2">{course.name}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {deptName && <Badge>{deptName}</Badge>}
+                          <Badge variant="outline">{course.total_semesters} Sem</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </section>

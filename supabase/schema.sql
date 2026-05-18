@@ -138,7 +138,11 @@ INSERT INTO exam_types (id, name, slug) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
--- Row Level Security (RLS)
+-- Row Level Security (RLS) — Security Best Practices
+-- Only SELECT policies are defined for public access.
+-- All admin modifications (INSERT, UPDATE, DELETE) are performed
+-- via the Next.js server-side using the service_role key,
+-- which automatically bypasses RLS.
 -- ============================================================
 
 -- Enable RLS on all tables
@@ -151,7 +155,7 @@ ALTER TABLE exam_types ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE upload_logs ENABLE ROW LEVEL SECURITY;
 
--- Public read for student-facing data
+-- 1. Public SELECT policies for student-facing data
 DROP POLICY IF EXISTS "Public read courses" ON courses;
 CREATE POLICY "Public read courses" ON courses FOR SELECT USING (true);
 
@@ -170,30 +174,13 @@ CREATE POLICY "Public read exam_types" ON exam_types FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Public read published documents" ON documents;
 CREATE POLICY "Public read published documents" ON documents FOR SELECT USING (status = 'published');
 
--- Admin full access (authenticated users via service role bypass RLS)
--- For admin operations, we use the service_role key which bypasses RLS
--- So we only need read policies for the anon key
-
--- Admins table — only service role can access
-DROP POLICY IF EXISTS "Service role manages admins" ON admins;
-CREATE POLICY "Service role manages admins" ON admins FOR ALL USING (true) WITH CHECK (true);
-
--- Upload logs — only service role
-DROP POLICY IF EXISTS "Service role manages logs" ON upload_logs;
-CREATE POLICY "Service role manages logs" ON upload_logs FOR ALL USING (true) WITH CHECK (true);
-
--- Documents — admin can do everything via service role
-DROP POLICY IF EXISTS "Admin manage documents" ON documents;
-CREATE POLICY "Admin manage documents" ON documents FOR ALL USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Admin manage courses" ON courses;
-CREATE POLICY "Admin manage courses" ON courses FOR ALL USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Admin manage semesters" ON semesters;
-CREATE POLICY "Admin manage semesters" ON semesters FOR ALL USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Admin manage subjects" ON subjects;
-CREATE POLICY "Admin manage subjects" ON subjects FOR ALL USING (true) WITH CHECK (true);
+-- Note: No policies are created for 'admins' and 'upload_logs'.
+-- This completely locks them down to all public/authenticated API requests,
+-- allowing access ONLY via the backend service_role client.
+--
+-- No write (INSERT/UPDATE/DELETE) policies are created for any table,
+-- which completely prevents public/anonymous users from modifying data.
+-- Writes are performed securely on the server-side via createAdminClient().
 
 -- ============================================================
 -- Updated_at trigger function

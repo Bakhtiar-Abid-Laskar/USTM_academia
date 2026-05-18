@@ -112,9 +112,6 @@ ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read departments" ON departments;
 CREATE POLICY "Public read departments" ON departments FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Admin manage departments" ON departments;
-CREATE POLICY "Admin manage departments" ON departments FOR ALL USING (true) WITH CHECK (true);
-
 -- 13. Updated_at trigger for departments
 DROP TRIGGER IF EXISTS set_updated_at_departments ON departments;
 CREATE TRIGGER set_updated_at_departments

@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
 
   // For syllabus/qp counts, fetch all docs for the relevant semesters in ONE query
   const semIds = (semesters || []).map((s: any) => s.id);
-  let syllabusMap: Record<string, number> = {};
-  let qpMap: Record<string, number> = {};
+  const syllabusMap: Record<string, number> = {};
+  const qpMap: Record<string, number> = {};
 
   if (semIds.length > 0) {
     const { data: docs } = await supabase
