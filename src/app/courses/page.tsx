@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { Metadata } from "next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
@@ -7,6 +8,18 @@ import { BookOpen } from "lucide-react";
 
 // Enable ISR: Cache page for 1 hour, then revalidate in background
 export const revalidate = 3600; // 1 hour in seconds
+
+// ✅ SEO: Dynamic metadata for courses page
+export const metadata: Metadata = {
+  title: "All Courses - USTM Academia",
+  description: "Browse all available courses at USTM. Find question papers and syllabus for engineering, science, and other programs.",
+  openGraph: {
+    title: "All Courses - USTM Academia",
+    description: "Browse all available courses at USTM and access study materials.",
+    url: "https://ustm-academia.vercel.app/courses",
+    type: "website",
+  },
+};
 
 export default async function CoursesPage() {
   const supabase = await createClient();
@@ -22,8 +35,8 @@ export default async function CoursesPage() {
       <main className="flex-1">
         <div className="max-w-content mx-auto px-4 sm:px-6 py-8">
           {/* Breadcrumb */}
-          <nav className="text-sm text-text-muted mb-6">
-            <Link href="/" className="hover:text-primary">Home</Link>
+          <nav className="text-sm text-text-muted mb-6" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-primary transition-colors duration-200">Home</Link>
             <span className="mx-2">›</span>
             <span className="text-text-main font-medium">Courses</span>
           </nav>
@@ -37,31 +50,34 @@ export default async function CoursesPage() {
               <p className="text-sm">Courses will be added soon. Please check back later.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {courses.map((course: any) => {
+            // ✅ ANIMATIONS: Staggered course cards with scroll-triggered animations
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
+              {courses.map((course: any, index: number) => {
                 const deptName = typeof course.department === "object" && course.department
                   ? course.department.name
                   : course.department;
 
                 return (
-                  <Link key={course.id} href={`/courses/${course.slug}`}>
-                    <Card className="hover:shadow-md transition-shadow h-full">
-                      <CardContent className="p-5">
-                        <h2 className="font-semibold text-text-main text-lg mb-1">{course.short_name}</h2>
-                        <p className="text-sm text-text-muted mb-3">{course.name}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {deptName && <Badge>{deptName}</Badge>}
-                          <Badge variant="outline">{course.total_semesters} Semesters</Badge>
-                          <Badge variant="outline">{course.duration_years} Years</Badge>
-                        </div>
-                      {course.description && (
-                        <p className="text-xs text-text-muted mt-3 line-clamp-2">{course.description}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+                  <div key={course.id} role="listitem" className="will-animate animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                    <Link href={`/courses/${course.slug}`}>
+                      <Card className="hover:shadow-md transition-shadow duration-200 h-full">
+                        <CardContent className="p-5">
+                          <h2 className="font-semibold text-text-main text-lg mb-1">{course.short_name}</h2>
+                          <p className="text-sm text-text-muted mb-3">{course.name}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {deptName && <Badge>{deptName}</Badge>}
+                            <Badge variant="outline">{course.total_semesters} Semesters</Badge>
+                            <Badge variant="outline">{course.duration_years} Years</Badge>
+                          </div>
+                          {course.description && (
+                            <p className="text-xs text-text-muted mt-3 line-clamp-2">{course.description}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

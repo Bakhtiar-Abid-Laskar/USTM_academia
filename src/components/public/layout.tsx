@@ -25,10 +25,13 @@ export function PublicHeader() {
           <Link href="/" className="flex items-center gap-2 text-white flex-shrink-0">
             <Image
               src="/ustm-logo.png"
-              alt="USTM Logo"
+              alt="USTM Logo - University of Science and Technology Meghalaya"
               width={36}
               height={36}
               className="rounded-full bg-white p-0.5"
+              // ✅ PERFORMANCE: Logo is LCP image, so eager + high priority
+              priority
+              fetchPriority="high"
             />
             <div className="hidden sm:block">
               <span className="font-bold text-sm leading-tight block">USTM Academia</span>
@@ -38,12 +41,12 @@ export function PublicHeader() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   pathname === link.href
                     ? "text-white bg-white/15"
                     : "text-primary-200 hover:text-white hover:bg-white/10"
@@ -54,8 +57,8 @@ export function PublicHeader() {
             ))}
             <Link
               href="/search"
-              className="ml-2 p-2 text-primary-200 hover:text-white hover:bg-white/10 rounded-md"
-              aria-label="Search"
+              className="ml-2 p-2 text-primary-200 hover:text-white hover:bg-white/10 rounded-md transition-colors duration-200"
+              aria-label="Search documents"
             >
               <Search className="h-5 w-5" />
             </Link>
@@ -63,13 +66,14 @@ export function PublicHeader() {
 
           {/* Mobile buttons */}
           <div className="flex items-center gap-2 md:hidden">
-            <Link href="/search" className="p-2 text-white" aria-label="Search">
+            <Link href="/search" className="p-2 text-white" aria-label="Search documents">
               <Search className="h-5 w-5" />
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-white"
-              aria-label="Toggle menu"
+              className="p-2 text-white transition-colors duration-200"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -78,13 +82,13 @@ export function PublicHeader() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <nav className="md:hidden pb-4 border-t border-white/10 pt-2">
+          <nav className="md:hidden pb-4 border-t border-white/10 pt-2" aria-label="Mobile navigation">
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2.5 rounded-md text-sm font-medium ${
+                className={`block px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 ${
                   pathname === link.href ? "text-white bg-white/15" : "text-primary-200 hover:text-white"
                 }`}
               >
