@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AdminBreadcrumb } from "@/components/admin/breadcrumb";
 import {
-  Plus, Trash2, Loader2, Eye, Upload, FileText, Search, Filter,
+  Trash2, Loader2, Eye, Upload, FileText, Search,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 

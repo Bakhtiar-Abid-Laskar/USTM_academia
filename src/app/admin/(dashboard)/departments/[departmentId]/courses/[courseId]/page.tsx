@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AdminBreadcrumb } from "@/components/admin/breadcrumb";
-import { Loader2, FileText, BookOpen, ChevronRight } from "lucide-react";
+import { Loader2, BookOpen, ChevronRight } from "lucide-react";
 
 interface Semester {
   id: string;
