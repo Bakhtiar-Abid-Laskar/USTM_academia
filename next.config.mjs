@@ -22,6 +22,14 @@ const nextConfig = {
 
     return config;
   },
+  // ✅ OPTIMIZED: Enable experimental features for better performance
+  experimental: {
+    optimizePackageImports: ["@radix-ui", "lucide-react"],
+  },
+  // ✅ OPTIMIZED: Compression for faster delivery
+  compress: true,
+  // ✅ OPTIMIZED: React strict mode for development warnings
+  reactStrictMode: true,
 };
 
 export default nextConfig;

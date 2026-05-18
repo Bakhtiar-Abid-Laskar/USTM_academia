@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, ArrowLeft, ExternalLink } from "lucide-react";
 
+// Enable ISR: Cache page for 1 hour, then revalidate in background
+export const revalidate = 3600; // 1 hour in seconds
+
 export default async function ViewDocumentPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
 

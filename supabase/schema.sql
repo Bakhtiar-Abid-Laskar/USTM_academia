@@ -118,6 +118,16 @@ CREATE INDEX IF NOT EXISTS idx_documents_year ON documents(year);
 CREATE INDEX IF NOT EXISTS idx_upload_logs_admin ON upload_logs(admin_id);
 CREATE INDEX IF NOT EXISTS idx_upload_logs_document ON upload_logs(document_id);
 
+-- ✅ OPTIMIZED: Composite indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_documents_status_course ON documents(status, course_id);
+CREATE INDEX IF NOT EXISTS idx_documents_status_semester ON documents(status, semester_id);
+CREATE INDEX IF NOT EXISTS idx_documents_status_subject ON documents(status, subject_id);
+CREATE INDEX IF NOT EXISTS idx_subjects_course_semester ON subjects(course_id, semester_id);
+CREATE INDEX IF NOT EXISTS idx_semesters_course_number ON semesters(course_id, semester_number);
+CREATE INDEX IF NOT EXISTS idx_courses_active ON courses(is_active);
+CREATE INDEX IF NOT EXISTS idx_subjects_active ON subjects(is_active);
+CREATE INDEX IF NOT EXISTS idx_semesters_active ON semesters(is_active);
+
 -- ============================================================
 -- Seed Data
 -- ============================================================
@@ -208,4 +218,31 @@ CREATE TRIGGER set_updated_at_subjects BEFORE UPDATE ON subjects FOR EACH ROW EX
 
 DROP TRIGGER IF EXISTS set_updated_at_documents ON documents;
 CREATE TRIGGER set_updated_at_documents BEFORE UPDATE ON documents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
+-- Full Text Search Function
+-- ============================================================
+CREATE OR REPLACE FUNCTION search_documents(search_query text)
+RETURNS SETOF documents AS $$
+BEGIN
+  RETURN QUERY
+  SELECT d.*
+  FROM documents d
+  LEFT JOIN subjects s ON d.subject_id = s.id
+  WHERE 
+    d.status = 'published'
+    AND (
+      -- Full text search across title and subject name
+      to_tsvector('english', d.title || ' ' || COALESCE(s.name, '')) @@ websearch_to_tsquery('english', search_query)
+      -- Fallback to ILIKE for partial matches (e.g. searching "eng" matches "engineering")
+      OR d.title ILIKE '%' || search_query || '%'
+      OR s.name ILIKE '%' || search_query || '%'
+    )
+  ORDER BY 
+    -- Rank exact FTS matches higher
+    ts_rank(to_tsvector('english', d.title || ' ' || COALESCE(s.name, '')), websearch_to_tsquery('english', search_query)) DESC,
+    d.created_at DESC
+  LIMIT 50;
+END;
+$$ LANGUAGE plpgsql;
 

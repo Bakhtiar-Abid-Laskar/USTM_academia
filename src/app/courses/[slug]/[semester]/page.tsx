@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 import { FileText } from "lucide-react";
 
+// Enable ISR: Cache page for 1 hour, then revalidate in background
+export const revalidate = 3600; // 1 hour in seconds
+
 export default async function SemesterSubjectsPage({
   params,
 }: {
@@ -35,31 +38,14 @@ export default async function SemesterSubjectsPage({
 
   if (!semester) notFound();
 
+  // ✅ OPTIMIZED: Use aggregation to get document counts per subject in a single query
   const { data: subjects } = await supabase
     .from("subjects")
-    .select("*")
+    .select("*, documents(count, document_type_id)")
     .eq("course_id", course.id)
     .eq("semester_id", semester.id)
     .eq("is_active", true)
     .order("name");
-
-  // Get document counts per subject
-  const subjectIds = subjects?.map(s => s.id) || [];
-  const docCounts: Record<string, { syllabus: number; qp: number }> = {};
-  if (subjectIds.length > 0) {
-    const { data: docs } = await supabase
-      .from("documents")
-      .select("subject_id, document_type_id")
-      .eq("status", "published")
-      .in("subject_id", subjectIds);
-    if (docs) {
-      docs.forEach((d: any) => {
-        if (!docCounts[d.subject_id]) docCounts[d.subject_id] = { syllabus: 0, qp: 0 };
-        if (d.document_type_id === 1) docCounts[d.subject_id].syllabus++;
-        else docCounts[d.subject_id].qp++;
-      });
-    }
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -90,8 +76,12 @@ export default async function SemesterSubjectsPage({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {subjects.map((subject: any) => {
-                const counts = docCounts[subject.id] || { syllabus: 0, qp: 0 };
-                const total = counts.syllabus + counts.qp;
+                // ✅ OPTIMIZED: Calculate counts from aggregated documents data
+                const docList = subject.documents || [];
+                const syllabusCount = docList.filter((d: any) => d.document_type_id === 1).length;
+                const qpCount = docList.filter((d: any) => d.document_type_id === 2).length;
+                const total = syllabusCount + qpCount;
+                
                 return (
                   <Link key={subject.id} href={`/courses/${course.slug}/${params.semester}/${subject.slug}`}>
                     <Card className="hover:shadow-md transition-shadow h-full">
@@ -101,8 +91,8 @@ export default async function SemesterSubjectsPage({
                           <p className="text-xs text-text-muted mb-3">Code: {subject.subject_code}</p>
                         )}
                         <div className="flex flex-wrap gap-2">
-                          {counts.syllabus > 0 && <Badge variant="default">{counts.syllabus} Syllabus</Badge>}
-                          {counts.qp > 0 && <Badge variant="outline">{counts.qp} Question Papers</Badge>}
+                          {syllabusCount > 0 && <Badge variant="default">{syllabusCount} Syllabus</Badge>}
+                          {qpCount > 0 && <Badge variant="outline">{qpCount} Question Papers</Badge>}
                           {total === 0 && <span className="text-xs text-gray-400">No documents yet</span>}
                         </div>
                       </CardContent>

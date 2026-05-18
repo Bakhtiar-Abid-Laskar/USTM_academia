@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 import { Calendar } from "lucide-react";
 
+// Enable ISR: Cache page for 1 hour, then revalidate in background
+export const revalidate = 3600; // 1 hour in seconds
+
 function getOrdinalSuffix(n: number): string {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -24,29 +27,13 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
 
   if (!course) notFound();
 
+  // ✅ OPTIMIZED: Use aggregation to get document counts per semester in a single query
   const { data: semesters } = await supabase
     .from("semesters")
-    .select("*, subjects:subjects(count)")
+    .select("*, documents(count)")
     .eq("course_id", course.id)
     .eq("is_active", true)
     .order("semester_number");
-
-  // Get document counts per semester
-  const semesterIds = semesters?.map(s => s.id) || [];
-  const docCounts: Record<string, number> = {};
-  if (semesterIds.length > 0) {
-    const { data: docs } = await supabase
-      .from("documents")
-      .select("semester_id")
-      .eq("course_id", course.id)
-      .eq("status", "published")
-      .in("semester_id", semesterIds);
-    if (docs) {
-      docs.forEach((d: any) => {
-        docCounts[d.semester_id] = (docCounts[d.semester_id] || 0) + 1;
-      });
-    }
-  }
 
   const deptName = typeof course.department === "object" && course.department
     ? course.department.name
@@ -93,8 +80,8 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
                       </div>
                       <p className="text-sm font-medium text-text-main mb-2">Semester</p>
                       <div className="flex flex-col gap-1 text-xs text-text-muted">
-                        {docCounts[sem.id] ? (
-                          <span>{docCounts[sem.id]} documents</span>
+                        {sem.documents?.[0]?.count ? (
+                          <span>{sem.documents[0].count} documents</span>
                         ) : (
                           <span className="text-gray-400">No documents yet</span>
                         )}

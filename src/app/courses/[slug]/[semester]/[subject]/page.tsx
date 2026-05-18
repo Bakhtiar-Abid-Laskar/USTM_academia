@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 import { FileText, Download, Eye, Inbox } from "lucide-react";
 
+// Enable ISR: Cache page for 1 hour, then revalidate in background
+export const revalidate = 3600; // 1 hour in seconds
+
 export default async function SubjectDocumentsPage({
   params,
 }: {
