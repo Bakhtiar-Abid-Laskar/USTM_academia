@@ -59,10 +59,11 @@ export default async function HomePage() {
               alt="USTM Logo - University of Science and Technology Meghalaya"
               width={72}
               height={72}
+              sizes="72px"
+              quality={60}
               className="mx-auto mb-4 rounded-full bg-white p-1 shadow-lg"
               // ✅ PERFORMANCE: Hero logo is LCP image
               priority
-              fetchPriority="high"
             />
             <h1 className="text-2xl sm:text-4xl font-bold mb-3 leading-tight">
               USTM Academic Resource Portal

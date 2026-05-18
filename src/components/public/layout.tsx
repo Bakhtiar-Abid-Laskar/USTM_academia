@@ -28,10 +28,9 @@ export function PublicHeader() {
               alt="USTM Logo - University of Science and Technology Meghalaya"
               width={36}
               height={36}
+              sizes="36px"
+              quality={60}
               className="rounded-full bg-white p-0.5"
-              // ✅ PERFORMANCE: Logo is LCP image, so eager + high priority
-              priority
-              fetchPriority="high"
             />
             <div className="hidden sm:block">
               <span className="font-bold text-sm leading-tight block">USTM Academia</span>

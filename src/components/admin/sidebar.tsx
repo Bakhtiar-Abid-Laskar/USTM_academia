@@ -46,6 +46,8 @@ export function AdminSidebar() {
           alt="USTM Logo"
           width={36}
           height={36}
+          sizes="36px"
+          quality={60}
           className="rounded-full bg-white p-0.5"
         />
         <div>

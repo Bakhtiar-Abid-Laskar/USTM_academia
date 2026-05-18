@@ -59,6 +59,8 @@ export default function AdminLoginPage() {
               alt="USTM Logo"
               width={64}
               height={64}
+              sizes="64px"
+              quality={60}
               className="rounded-full"
             />
           </div>
