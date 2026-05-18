@@ -31,11 +31,11 @@ interface UseScrollAnimationOptions {
 
 type AnimationType = 'fade-in' | 'slide-up' | 'slide-in-left' | 'slide-in-right' | 'scale-in';
 
-export function useScrollAnimation(
+export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
   animationType: AnimationType = 'slide-up',
   options: UseScrollAnimationOptions = {}
 ) {
-  const ref = useRef<HTMLElement | null>(null);
+  const ref = useRef<T | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const animatedCountRef = useRef(0);
 

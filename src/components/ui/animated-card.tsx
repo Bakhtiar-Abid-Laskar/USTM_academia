@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { useScrollAnimation } from '@/lib/useScrollAnimation';
-import { Card, CardContent } from './card';
+import { Card } from './card';
 import { cn } from '@/lib/utils';
 
 interface AnimatedCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -22,7 +22,7 @@ interface AnimatedCardProps extends React.HTMLAttributes<HTMLDivElement> {
  * Drop-in replacement for Card with scroll-triggered animation
  */
 const AnimatedCard = React.forwardRef<HTMLDivElement, AnimatedCardProps>(
-  ({ animation = 'slide-up', staggerIndex, className, children, ...props }, ref) => {
+  ({ animation = 'slide-up', staggerIndex, className, children, ...props }, _ref) => {
     const scrollRef = useScrollAnimation(animation);
 
     return (
@@ -33,8 +33,9 @@ const AnimatedCard = React.forwardRef<HTMLDivElement, AnimatedCardProps>(
           staggerIndex !== undefined && `animation-delay-${Math.min(staggerIndex * 100, 600)}`,
           className
         )}
+        {...props}
       >
-        <Card ref={ref} {...props}>
+        <Card>
           {children}
         </Card>
       </div>

@@ -131,7 +131,7 @@ export default async function HomePage() {
           <section className="bg-white border-t border-border">
             <div className="max-w-content mx-auto px-4 sm:px-6 py-10 sm:py-16">
               <h2 className="text-xl sm:text-2xl font-bold text-text-main mb-6">Recently Added</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[250px]" role="list">
                 {recentDocs.map((doc: any, index: number) => (
                   <div key={doc.id} role="listitem" className="will-animate animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
                     <Link href={`/view/${doc.id}`}>
