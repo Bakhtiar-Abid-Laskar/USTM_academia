@@ -8,41 +8,70 @@ export async function GET(request: NextRequest) {
   const courseId = searchParams.get("course_id");
   const docTypeId = searchParams.get("document_type_id");
 
-  let query = supabase
-    .from("documents")
-    .select(`
+  try {
+    let query;
+    const selectColumns = `
       id, title, year, file_url, is_downloadable, status, created_at,
       course:courses(id, short_name, slug),
       semester:semesters(id, label, semester_number),
       subject:subjects(id, name, slug),
       document_type:document_types(id, name, slug),
       exam_type:exam_types(id, name, slug)
-    `)
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(50);
+    `;
 
-  if (q) {
-    // PostgREST doesn't support OR across tables natively.
-    // We first find matching subjects, then include them in the documents OR filter.
-    const { data: matchedSubjects } = await supabase
-      .from("subjects")
-      .select("id")
-      .ilike("name", `%${q}%`);
+    if (q.trim()) {
+      // Use the powerful Full-Text Search RPC function to get document IDs
+      const { data: searchResults, error: rpcError } = await supabase.rpc(
+        "search_documents",
+        { search_query: q.trim() }
+      );
 
-    const subjectIds = matchedSubjects?.map(s => s.id) || [];
+      if (rpcError) {
+        return NextResponse.json(
+          { error: rpcError.message },
+          { status: 500 }
+        );
+      }
 
-    if (subjectIds.length > 0) {
-      const subjectIdList = `(${subjectIds.join(',')})`;
-      query = query.or(`title.ilike.%${q}%,subject_id.in.${subjectIdList}`);
+      // Extract IDs from RPC results
+      const docIds = searchResults?.map((doc: any) => doc.id) || [];
+      
+      if (docIds.length === 0) {
+        return NextResponse.json([]);
+      }
+
+      // Fetch full documents with relationships using the IDs from search
+      query = supabase
+        .from("documents")
+        .select(selectColumns)
+        .in("id", docIds)
+        .order("created_at", { ascending: false });
     } else {
-      query = query.ilike("title", `%${q}%`);
-    }
-  }
-  if (courseId) query = query.eq("course_id", courseId);
-  if (docTypeId) query = query.eq("document_type_id", Number(docTypeId));
+      // Fallback to normal query when no search term is provided
+      query = supabase
+        .from("documents")
+        .select(selectColumns)
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+      if (courseId) query = query.eq("course_id", courseId);
+      if (docTypeId) query = query.eq("document_type_id", Number(docTypeId));
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data || []);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
