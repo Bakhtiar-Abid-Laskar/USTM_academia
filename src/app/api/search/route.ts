@@ -23,7 +23,21 @@ export async function GET(request: NextRequest) {
     .limit(50);
 
   if (q) {
-    query = query.or(`title.ilike.%${q}%,subject.name.ilike.%${q}%`);
+    // PostgREST doesn't support OR across tables natively.
+    // We first find matching subjects, then include them in the documents OR filter.
+    const { data: matchedSubjects } = await supabase
+      .from("subjects")
+      .select("id")
+      .ilike("name", `%${q}%`);
+
+    const subjectIds = matchedSubjects?.map(s => s.id) || [];
+
+    if (subjectIds.length > 0) {
+      const subjectIdList = `(${subjectIds.join(',')})`;
+      query = query.or(`title.ilike.%${q}%,subject_id.in.${subjectIdList}`);
+    } else {
+      query = query.ilike("title", `%${q}%`);
+    }
   }
   if (courseId) query = query.eq("course_id", courseId);
   if (docTypeId) query = query.eq("document_type_id", Number(docTypeId));
