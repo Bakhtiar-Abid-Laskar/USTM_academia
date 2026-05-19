@@ -98,11 +98,17 @@ export async function DELETE(request: NextRequest) {
   const { data: doc } = await adminClient.from("documents").select("*").eq("id", id).single();
   if (!doc) return NextResponse.json({ error: "Document not found" }, { status: 404 });
 
-  // Extract storage path from URL
-  const url = new URL(doc.file_url);
-  const pathParts = url.pathname.split("/storage/v1/object/public/documents/");
-  if (pathParts[1]) {
-    await adminClient.storage.from("documents").remove([decodeURIComponent(pathParts[1])]);
+  // Delete from Google Drive or Supabase Storage (fallback for old docs)
+  if (doc.google_drive_file_id) {
+    const { deleteFileFromGoogleDrive } = await import("@/lib/google-drive");
+    await deleteFileFromGoogleDrive(doc.google_drive_file_id);
+  } else if (doc.file_url) {
+    // Extract storage path from URL for old Supabase Storage docs
+    const url = new URL(doc.file_url);
+    const pathParts = url.pathname.split("/storage/v1/object/public/documents/");
+    if (pathParts[1]) {
+      await adminClient.storage.from("documents").remove([decodeURIComponent(pathParts[1])]);
+    }
   }
 
   // Delete from database
@@ -122,3 +128,4 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ success: true });
 }
+

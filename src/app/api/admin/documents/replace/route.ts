@@ -5,7 +5,8 @@ import {
   uploadPdfToGoogleDrive, 
   makeGoogleDriveFilePublic, 
   getGoogleDrivePreviewUrl, 
-  getGoogleDriveViewUrl 
+  getGoogleDriveViewUrl,
+  deleteFileFromGoogleDrive
 } from "@/lib/google-drive";
 
 const MAX_FILE_SIZE_MB = Number(process.env.MAX_PDF_UPLOAD_SIZE_MB || "25");
@@ -19,8 +20,10 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const documentId = formData.get("document_id") as string | null;
 
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!documentId) return NextResponse.json({ error: "No document ID provided" }, { status: 400 });
 
     // Validate file type
     if (file.type !== "application/pdf") {
@@ -37,33 +40,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `File size must not exceed ${MAX_FILE_SIZE_MB} MB` }, { status: 400 });
     }
 
-    // Support both formats: JSON metadata string OR individual form fields
-    const metadataStr = formData.get("metadata") as string | null;
-    let metadata: any;
-
-    if (metadataStr) {
-      metadata = JSON.parse(metadataStr);
-    } else {
-      metadata = {
-        title: formData.get("title"),
-        subject_id: formData.get("subject_id"),
-        course_id: formData.get("course_id"),
-        semester_id: formData.get("semester_id"),
-        department_id: formData.get("department_id"),
-        document_type_id: formData.get("document_type_id"),
-        exam_type_id: formData.get("exam_type_id"),
-        year: formData.get("year"),
-        is_downloadable: formData.get("is_downloadable") !== "false",
-        status: formData.get("status") || "published",
-      };
-    }
-
-    // Validate required fields
-    if (!metadata.title || !metadata.subject_id || !metadata.course_id ||
-        !metadata.semester_id || !metadata.document_type_id) {
-      return NextResponse.json({ error: "Missing required metadata fields" }, { status: 400 });
-    }
-
     const adminClient = createAdminClient();
 
     // Get admin record
@@ -77,11 +53,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Admin account not found" }, { status: 403 });
     }
 
+    // Get existing document
+    const { data: existingDoc } = await adminClient
+      .from("documents")
+      .select("*")
+      .eq("id", documentId)
+      .single();
+      
+    if (!existingDoc) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
     // Fetch names for Google Drive folder organization
     const [{ data: course }, { data: semester }, { data: subject }] = await Promise.all([
-      adminClient.from("courses").select("department, name").eq("id", metadata.course_id).single(),
-      adminClient.from("semesters").select("label").eq("id", metadata.semester_id).single(),
-      adminClient.from("subjects").select("name").eq("id", metadata.subject_id).single(),
+      adminClient.from("courses").select("department, name").eq("id", existingDoc.course_id).single(),
+      adminClient.from("semesters").select("label").eq("id", existingDoc.semester_id).single(),
+      adminClient.from("subjects").select("name").eq("id", existingDoc.subject_id).single(),
     ]);
 
     const folderPath = [];
@@ -93,10 +80,9 @@ export async function POST(request: NextRequest) {
     // Generate unique file name
     const timestamp = Math.floor(Date.now() / 1000);
     const sanitized = sanitizeFileName(file.name.replace('.pdf', ''));
-    // e.g. clean-name-1712233445.pdf
     const storagePath = `${sanitized}-${timestamp}.pdf`;
 
-    // Upload to Google Drive (with folder path)
+    // Upload to Google Drive
     const driveUploadResponse = await uploadPdfToGoogleDrive(file, storagePath, file.type, folderPath);
     
     if (!driveUploadResponse.id) {
@@ -111,49 +97,51 @@ export async function POST(request: NextRequest) {
     const previewUrl = getGoogleDrivePreviewUrl(fileId);
     const viewUrl = getGoogleDriveViewUrl(fileId);
 
-    // Save document metadata
+    // Update document metadata in DB
     const { data: docData, error: docError } = await adminClient
       .from("documents")
-      .insert({
-        title: metadata.title,
-        subject_id: metadata.subject_id,
-        course_id: metadata.course_id,
-        semester_id: metadata.semester_id,
-        department_id: metadata.department_id || null,
-        document_type_id: Number(metadata.document_type_id),
-        exam_type_id: metadata.exam_type_id ? Number(metadata.exam_type_id) : null,
-        year: metadata.year ? Number(metadata.year) : null,
-        file_url: null, // Legacy, can be null
+      .update({
         google_drive_file_id: fileId,
         google_drive_preview_url: previewUrl,
         google_drive_view_url: viewUrl,
         file_name: file.name,
         file_size_bytes: file.size,
-        is_downloadable: metadata.is_downloadable !== false,
-        status: metadata.status || "published",
-        uploaded_by: adminData.id,
       })
+      .eq("id", documentId)
       .select()
       .single();
 
     if (docError) {
-      // If DB insert fails, we should delete the Drive file or at least it will be orphaned.
-      // Ignoring deletion for now to avoid complexity, but you might want to handle it.
       return NextResponse.json({ error: docError.message }, { status: 500 });
     }
 
-    // Log the upload
+    // Delete old file if it existed
+    if (existingDoc.google_drive_file_id) {
+      await deleteFileFromGoogleDrive(existingDoc.google_drive_file_id);
+    } else if (existingDoc.file_url) {
+      try {
+        const url = new URL(existingDoc.file_url);
+        const pathParts = url.pathname.split("/storage/v1/object/public/documents/");
+        if (pathParts[1]) {
+          await adminClient.storage.from("documents").remove([decodeURIComponent(pathParts[1])]);
+        }
+      } catch (e) {
+        console.error("Failed to delete old supabase file", e);
+      }
+    }
+
+    // Log the replace
     await adminClient.from("upload_logs").insert({
       admin_id: adminData.id,
-      document_id: docData.id,
-      action: "upload",
+      document_id: documentId,
+      action: "replace",
       file_name: file.name,
-      notes: `Uploaded "${metadata.title}" to Google Drive`,
+      notes: `Replaced PDF for "${existingDoc.title}"`,
     });
 
-    return NextResponse.json(docData, { status: 201 });
+    return NextResponse.json(docData, { status: 200 });
   } catch (err: any) {
-    console.error("Upload error:", err);
-    return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 });
+    console.error("Replace error:", err);
+    return NextResponse.json({ error: err.message || "Replace failed" }, { status: 500 });
   }
 }

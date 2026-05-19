@@ -62,14 +62,14 @@ export default async function ViewDocumentPage({ params }: { params: { id: strin
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {doc.is_downloadable && (
-                  <a href={doc.file_url} download target="_blank" rel="noopener noreferrer">
+                  <a href={doc.google_drive_view_url || doc.file_url} download target="_blank" rel="noopener noreferrer">
                     <Button size="sm">
                       <Download className="h-4 w-4 mr-1.5" />
                       Download
                     </Button>
                   </a>
                 )}
-                <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                <a href={doc.google_drive_view_url || doc.file_url} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="sm">
                     <ExternalLink className="h-4 w-4 mr-1.5" />
                     Open in Tab
@@ -85,9 +85,10 @@ export default async function ViewDocumentPage({ params }: { params: { id: strin
           <div className="max-w-5xl mx-auto px-0 sm:px-4 py-0 sm:py-4">
             <div className="bg-white sm:rounded-lg sm:shadow-md overflow-hidden" style={{ height: "calc(100vh - 200px)" }}>
               <iframe
-                src={`${doc.file_url}#toolbar=1&navpanes=0`}
+                src={doc.google_drive_preview_url || `${doc.file_url}#toolbar=1&navpanes=0`}
                 className="w-full h-full"
                 title={doc.title}
+                allow="autoplay"
               />
             </div>
           </div>
@@ -98,7 +99,7 @@ export default async function ViewDocumentPage({ params }: { params: { id: strin
           <p className="text-sm text-text-muted mb-3">
             If the PDF is not loading, tap the button below to open it directly.
           </p>
-          <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+          <a href={doc.google_drive_view_url || doc.file_url} target="_blank" rel="noopener noreferrer">
             <Button className="w-full">
               <ExternalLink className="h-4 w-4 mr-2" />
               Open PDF in Browser

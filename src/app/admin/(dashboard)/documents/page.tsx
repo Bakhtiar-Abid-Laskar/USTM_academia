@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Trash2, Loader2, Eye, Upload } from "lucide-react";
+import { Trash2, Loader2, Eye, Upload, RefreshCw } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import type { Course } from "@/types";
@@ -19,6 +19,9 @@ export default function ManageDocumentsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  
+  const [replacingId, setReplacingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/admin/courses").then(r => r.json()).then(d => { if (Array.isArray(d)) setCourses(d); });
@@ -45,8 +48,56 @@ export default function ManageDocumentsPage() {
     setDeleteDialogOpen(false); setSaving(false); fetchDocuments();
   }
 
+  const triggerReplace = (id: string) => {
+    setReplacingId(id);
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !replacingId) return;
+    const file = e.target.files[0];
+    
+    // reset input
+    e.target.value = '';
+    
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("document_id", replacingId);
+
+      const res = await fetch("/api/admin/documents/replace", {
+        method: "POST",
+        body: formData
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to replace document");
+      } else {
+        alert("PDF replaced successfully");
+        fetchDocuments();
+      }
+    } catch (err) {
+      alert("Error replacing document");
+    } finally {
+      setSaving(false);
+      setReplacingId(null);
+    }
+  };
+
   return (
     <div>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept="application/pdf"
+        onChange={handleFileChange}
+      />
+      
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-text-main">Manage Documents</h1>
         <Link href="/admin/documents/upload">
@@ -94,7 +145,7 @@ export default function ManageDocumentsPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
                       <Badge variant={doc.document_type?.slug === "syllabus" ? "default" : "outline"}>
-                        {doc.document_type?.name}
+                         {doc.document_type?.name}
                       </Badge>
                       {doc.exam_type && <Badge variant="outline">{doc.exam_type.name}</Badge>}
                       {doc.year && <Badge variant="outline">{doc.year}</Badge>}
@@ -105,10 +156,23 @@ export default function ManageDocumentsPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-xs text-text-muted hidden sm:block">{formatDate(doc.created_at)}</span>
-                    <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                    <a href={doc.google_drive_view_url || doc.file_url} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm"><Eye className="h-3 w-3 mr-1" />View</Button>
                     </a>
-                    <Button variant="ghost" size="icon" onClick={() => { setDeleting(doc); setDeleteDialogOpen(true); }}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => triggerReplace(doc.id)}
+                      disabled={saving && replacingId === doc.id}
+                    >
+                      {saving && replacingId === doc.id ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                      )}
+                      Replace
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => { setDeleting(doc); setDeleteDialogOpen(true); }} disabled={saving}>
                       <Trash2 className="h-4 w-4 text-error" />
                     </Button>
                   </div>

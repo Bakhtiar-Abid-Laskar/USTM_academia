@@ -1,0 +1,27 @@
+## Phase: Google Drive PDF Storage Integration
+
+- [x] Analyze existing upload form
+- [x] Analyze existing document database schema
+- [x] Install Google API dependency
+- [x] Add Google Drive environment variables to `.env.example`
+- [x] Create server-side Google Drive utility
+- [x] Implement Google Drive authentication
+- [x] Implement PDF upload to Google Drive
+- [x] Implement public/view permission creation
+- [x] Store Google Drive file ID in database
+- [x] Store Google Drive preview URL in database
+- [x] Update existing upload API route
+- [x] Add PDF-only validation
+- [x] Add file size validation
+- [x] Update admin upload form if needed
+- [x] Update document list to use Google Drive file data
+- [x] Update PDF viewer to use Google Drive preview iframe
+- [x] Implement replace PDF functionality
+- [x] Implement delete PDF from Google Drive
+- [x] Protect all upload/update/delete APIs
+- [x] Test admin PDF upload
+- [x] Test student PDF viewing
+- [x] Test invalid file upload
+- [x] Test file replacement
+- [x] Test document deletion
+- [x] Update README setup instructions

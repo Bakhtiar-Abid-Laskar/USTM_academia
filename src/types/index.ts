@@ -76,9 +76,12 @@ export interface Document {
   document_type_id: number;
   exam_type_id: number | null;
   year: number | null;
-  file_url: string;
+  file_url: string | null;
   file_name: string;
   file_size_bytes: number | null;
+  google_drive_file_id: string | null;
+  google_drive_view_url: string | null;
+  google_drive_preview_url: string | null;
   is_downloadable: boolean;
   status: "published" | "draft" | "archived";
   uploaded_by: string;
