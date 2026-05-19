@@ -95,14 +95,28 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile hamburger button */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-primary text-white shadow-md"
-        aria-label="Open navigation menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+      {/* Mobile Top Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-primary z-40 flex items-center justify-between px-4 shadow-md">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/ustm-logo.png"
+            alt="USTM Logo"
+            width={32}
+            height={32}
+            sizes="32px"
+            quality={60}
+            className="rounded-full bg-white p-0.5"
+          />
+          <span className="font-bold text-white text-sm">USTM Academia</span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-md text-white hover:bg-white/10 transition-colors"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+      </div>
 
       {/* Mobile overlay */}
       {mobileOpen && (

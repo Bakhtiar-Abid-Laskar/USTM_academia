@@ -100,23 +100,23 @@ export default function ManageDocumentsPage() {
       
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-text-main">Manage Documents</h1>
-        <Link href="/admin/documents/upload">
-          <Button><Upload className="h-4 w-4 mr-2" />Upload New</Button>
+        <Link href="/admin/documents/upload" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto"><Upload className="h-4 w-4 mr-2" />Upload New</Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            <CardTitle>Documents ({documents.length})</CardTitle>
-            <div className="flex gap-2 sm:ml-auto flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center w-full">
+            <CardTitle className="whitespace-nowrap">Documents ({documents.length})</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto w-full sm:w-auto">
               <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)}
-                className="border border-border rounded-md px-3 py-2 text-sm bg-white">
+                className="border border-border rounded-md px-3 py-2 text-sm bg-white w-full sm:w-auto">
                 <option value="">All Courses</option>
                 {courses.map(c => <option key={c.id} value={c.id}>{c.short_name}</option>)}
               </select>
               <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)}
-                className="border border-border rounded-md px-3 py-2 text-sm bg-white">
+                className="border border-border rounded-md px-3 py-2 text-sm bg-white w-full sm:w-auto">
                 <option value="">All Status</option>
                 <option value="published">Published</option>
                 <option value="draft">Draft</option>
@@ -154,7 +154,7 @@ export default function ManageDocumentsPage() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 flex-shrink-0 mt-3 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-border">
                     <span className="text-xs text-text-muted hidden sm:block">{formatDate(doc.created_at)}</span>
                     <a href={doc.google_drive_view_url || doc.file_url} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm"><Eye className="h-3 w-3 mr-1" />View</Button>

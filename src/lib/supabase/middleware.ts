@@ -2,8 +2,12 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  // Skip session refresh for API routes — they handle their own auth
-  if (request.nextUrl.pathname.startsWith("/api/")) {
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  const isApiAdminRoute = request.nextUrl.pathname.startsWith("/api/admin");
+  const isLoginPage = request.nextUrl.pathname === "/admin/login";
+
+  // Skip middleware for public routes
+  if (!isAdminRoute && !isApiAdminRoute) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
@@ -31,22 +35,41 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh session — important for keeping the session alive
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protect admin routes: redirect to login if not authenticated
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const isLoginPage = request.nextUrl.pathname === "/admin/login";
+  if (user && !isLoginPage) {
+    const lastActive = request.cookies.get("admin_last_active")?.value;
+    const now = Date.now();
+    const THIRTY_MINUTES = 30 * 60 * 1000;
 
-  if (isAdminRoute && !isLoginPage && !user) {
-    const loginUrl = new URL("/admin/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    // If last_active is missing (browser restart) OR timeout exceeded (30 mins)
+    if (!lastActive || (now - parseInt(lastActive, 10) > THIRTY_MINUTES)) {
+      await supabase.auth.signOut();
+      response = NextResponse.redirect(new URL("/admin/login?expired=true", request.url));
+      response.cookies.delete("admin_last_active");
+      return response;
+    }
+
+    // Update last active timestamp (session cookie, no maxAge)
+    response.cookies.set("admin_last_active", now.toString(), {
+      path: "/",
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+  }
+
+  // Protect admin routes: redirect to login if not authenticated
+  if (!user && (isAdminRoute || isApiAdminRoute) && !isLoginPage) {
+    if (isApiAdminRoute) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
   // If user is logged in and visits /admin/login, redirect to dashboard
   if (isLoginPage && user) {
-    const dashboardUrl = new URL("/admin/dashboard", request.url);
-    return NextResponse.redirect(dashboardUrl);
+    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
   }
 
   return response;

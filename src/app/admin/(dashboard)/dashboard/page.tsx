@@ -108,18 +108,18 @@ export default function AdminDashboardPage() {
       {/* Departments Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-text-main">Departments</h1>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
             <Input
               placeholder="Search departments..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-10 w-60"
+              className="pl-10 w-full sm:w-60"
             />
           </div>
-          <Link href="/admin/departments/new">
-            <Button><Plus className="h-4 w-4 mr-2" />Add Department</Button>
+          <Link href="/admin/departments/new" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" />Add Department</Button>
           </Link>
         </div>
       </div>

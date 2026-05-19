@@ -41,6 +41,9 @@ export default function AdminLoginPage() {
         return;
       }
 
+      // Set initial session cookie for activity tracking
+      document.cookie = `admin_last_active=${Date.now()}; path=/; samesite=lax`;
+
       router.push("/admin/dashboard");
       router.refresh();
     } catch {
