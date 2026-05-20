@@ -154,3 +154,39 @@ export interface DashboardStats {
   totalDocuments: number;
   documentsThisMonth: number;
 }
+
+/* ─── Bulk Upload Types ─── */
+
+export interface BulkUploadMetadata {
+  title: string;
+  course_id: string;
+  semester_id: string;
+  subject_id: string;
+  document_type_id: string;
+  exam_type_id: string;
+  year: string;
+  is_downloadable: boolean;
+  status: "published" | "draft" | "archived";
+}
+
+export interface BulkUploadFileItem {
+  id: string;
+  file: File;
+  sequence: number;
+  metadata: BulkUploadMetadata;
+  status: "pending" | "uploading" | "done" | "error";
+  error?: string;
+  result?: {
+    documentId: string;
+    driveFileId: string;
+    driveViewUrl: string;
+  };
+}
+
+export interface BulkUploadResult {
+  success: boolean;
+  document?: Document;
+  driveFileId?: string;
+  driveViewUrl?: string;
+  error?: string;
+}

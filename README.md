@@ -2,7 +2,7 @@
 
 # 📚 USTM Academia
 
-**The Academic Resource Portal for USTM**
+**The Official Academic Resource Portal for USTM**
 
 *Find Your Papers. Ace Your Exams.*
 

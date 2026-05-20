@@ -27,8 +27,23 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
+        {/* ✅ PERFORMANCE: Google Fonts optimization */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        {/* eslint-disable-next-line @next/next/google-font-preconnect */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          as="style"
+        />
+        
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" href="/ustm-logo.png" type="image/png" />
+        
+        {/* ✅ DNS Prefetch for Google Fonts */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>
       <body className={`${inter.className} min-h-screen bg-background antialiased`}>
         {children}

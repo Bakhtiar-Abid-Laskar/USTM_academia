@@ -42,3 +42,20 @@ export function sanitizeFileName(name: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+/** Slugify a filename for Drive: lowercase, hyphens, strip specials, max 100 chars */
+export function slugifyFileName(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/\.pdf$/i, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return slug.substring(0, 100);
+}
+
+/** Zero-pad a number to the given width (e.g., zeroPad(1, 2) → "01") */
+export function zeroPad(n: number, width: number = 2): string {
+  return String(n).padStart(width, "0");
+}

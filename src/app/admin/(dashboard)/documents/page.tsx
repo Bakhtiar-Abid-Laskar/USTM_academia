@@ -8,14 +8,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Trash2, Loader2, Eye, Upload, RefreshCw } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import type { Course } from "@/types";
+import { useSearchParams } from "next/navigation";
+import type { Course, Semester, Subject } from "@/types";
 
 export default function ManageDocumentsPage() {
+  const searchParams = useSearchParams();
   const [documents, setDocuments] = useState<any[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState<any>(null);
   const [saving, setSaving] = useState(false);
@@ -25,15 +33,47 @@ export default function ManageDocumentsPage() {
 
   useEffect(() => {
     fetch("/api/admin/courses").then(r => r.json()).then(d => { if (Array.isArray(d)) setCourses(d); });
-  }, []);
+    
+    // Parse URL params on mount
+    const courseId = searchParams.get("course_id");
+    const semesterId = searchParams.get("semester_id");
+    const subjectId = searchParams.get("subject_id");
+    if (courseId) setSelectedCourse(courseId);
+    if (semesterId) setSelectedSemester(semesterId);
+    if (subjectId) setSelectedSubject(subjectId);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (selectedCourse) {
+      fetch(`/api/admin/semesters?course_id=${selectedCourse}`).then(r => r.json()).then(d => {
+        if (Array.isArray(d)) setSemesters(d);
+      });
+    } else {
+      setSemesters([]);
+      setSelectedSemester("");
+    }
+  }, [selectedCourse]);
+
+  useEffect(() => {
+    if (selectedSemester) {
+      fetch(`/api/admin/subjects?semester_id=${selectedSemester}`).then(r => r.json()).then(d => {
+        if (Array.isArray(d)) setSubjects(d);
+      });
+    } else {
+      setSubjects([]);
+      setSelectedSubject("");
+    }
+  }, [selectedSemester]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchDocuments(); }, [selectedCourse, selectedStatus]);
+  useEffect(() => { fetchDocuments(); }, [selectedCourse, selectedSemester, selectedSubject, selectedStatus]);
 
   async function fetchDocuments() {
     setLoading(true);
     let url = "/api/admin/documents?";
     if (selectedCourse) url += `course_id=${selectedCourse}&`;
+    if (selectedSemester) url += `semester_id=${selectedSemester}&`;
+    if (selectedSubject) url += `subject_id=${selectedSubject}&`;
     if (selectedStatus) url += `status=${selectedStatus}&`;
     const res = await fetch(url);
     const data = await res.json();
@@ -80,7 +120,7 @@ export default function ManageDocumentsPage() {
         alert("PDF replaced successfully");
         fetchDocuments();
       }
-    } catch (err) {
+    } catch (_err) { // eslint-disable-line @typescript-eslint/no-unused-vars
       alert("Error replacing document");
     } finally {
       setSaving(false);
@@ -100,9 +140,14 @@ export default function ManageDocumentsPage() {
       
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-text-main">Manage Documents</h1>
-        <Link href="/admin/documents/upload" className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto"><Upload className="h-4 w-4 mr-2" />Upload New</Button>
-        </Link>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Link href="/admin/documents/bulk-upload" className="flex-1 sm:flex-initial">
+            <Button variant="outline" className="w-full sm:w-auto"><Upload className="h-4 w-4 mr-2" />Bulk Upload</Button>
+          </Link>
+          <Link href="/admin/documents/upload" className="flex-1 sm:flex-initial">
+            <Button className="w-full sm:w-auto"><Upload className="h-4 w-4 mr-2" />Upload New</Button>
+          </Link>
+        </div>
       </div>
 
       <Card>
@@ -110,11 +155,25 @@ export default function ManageDocumentsPage() {
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center w-full">
             <CardTitle className="whitespace-nowrap">Documents ({documents.length})</CardTitle>
             <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto w-full sm:w-auto">
-              <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)}
+              <select value={selectedCourse} onChange={e => { setSelectedCourse(e.target.value); setSelectedSemester(""); setSelectedSubject(""); }}
                 className="border border-border rounded-md px-3 py-2 text-sm bg-white w-full sm:w-auto">
                 <option value="">All Courses</option>
                 {courses.map(c => <option key={c.id} value={c.id}>{c.short_name}</option>)}
               </select>
+              {selectedCourse && (
+                <select value={selectedSemester} onChange={e => { setSelectedSemester(e.target.value); setSelectedSubject(""); }}
+                  className="border border-border rounded-md px-3 py-2 text-sm bg-white w-full sm:w-auto">
+                  <option value="">All Semesters</option>
+                  {semesters.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              )}
+              {selectedSemester && (
+                <select value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)}
+                  className="border border-border rounded-md px-3 py-2 text-sm bg-white w-full sm:w-auto">
+                  <option value="">All Subjects</option>
+                  {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              )}
               <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)}
                 className="border border-border rounded-md px-3 py-2 text-sm bg-white w-full sm:w-auto">
                 <option value="">All Status</option>

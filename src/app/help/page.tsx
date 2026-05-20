@@ -1,4 +1,22 @@
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Help & FAQ - USTM Academia",
+  description: "Get help and answers to frequently asked questions about USTM Academia. Learn how to browse courses, find documents, and download PDFs.",
+  keywords: ["USTM Academia", "help", "FAQ", "frequently asked questions", "support"],
+  openGraph: {
+    title: "Help & FAQ - USTM Academia",
+    description: "Frequently asked questions about USTM Academia",
+    url: "https://ustm-academia.vercel.app/help",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Help & FAQ",
+    description: "Get help with USTM Academia",
+  },
+};
 
 export default function HelpPage() {
   const faqs = [

@@ -1,5 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { documentUpdateSchema } from "@/lib/validations";
+import { deleteFileFromGoogleDrive } from "@/lib/google-drive";
 
 // GET — list documents with optional filters
 export async function GET(request: NextRequest) {
@@ -41,39 +43,68 @@ export async function PUT(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const { id, ...updateData } = body;
-  if (!id) return NextResponse.json({ error: "Missing document id" }, { status: 400 });
+  try {
+    const body = await request.json();
+    
+    // ✅ FIX #3: Validate input against schema to prevent unauthorized field updates
+    const parsed = documentUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { 
+          error: "Invalid input",
+          details: parsed.error.issues.map(e => ({
+            field: e.path.join("."),
+            message: e.message
+          }))
+        },
+        { status: 400 }
+      );
+    }
 
-  const adminClient = createAdminClient();
+    const { id, ...updateData } = parsed.data;
 
-  const { data: adminData } = await adminClient
-    .from("admins")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .single();
+    // Remove undefined values
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, v]) => v !== undefined)
+    );
 
-  const { data, error } = await adminClient
-    .from("documents")
-    .update(updateData)
-    .eq("id", id)
-    .select()
-    .single();
+    const adminClient = createAdminClient();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const { data: adminData } = await adminClient
+      .from("admins")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .single();
 
-  // Log the update
-  if (adminData) {
-    await adminClient.from("upload_logs").insert({
-      admin_id: adminData.id,
-      document_id: id,
-      action: "update",
-      file_name: data.file_name,
-      notes: `Updated metadata for "${data.title}"`,
-    });
+    const { data, error } = await adminClient
+      .from("documents")
+      .update(cleanUpdateData)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Log the update (non-critical)
+    if (adminData) {
+      try {
+        await adminClient.from("upload_logs").insert({
+          admin_id: adminData.id,
+          document_id: id,
+          action: "update",
+          file_name: data.file_name,
+          notes: `Updated metadata for "${data.title}"`,
+        });
+      } catch (logError) {
+        console.error("Failed to log update action:", logError);
+      }
+    }
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    console.error("Update error:", err);
+    return NextResponse.json({ error: err.message || "Update failed" }, { status: 500 });
   }
-
-  return NextResponse.json(data);
 }
 
 // DELETE — delete a document
@@ -86,46 +117,71 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing document id" }, { status: 400 });
 
-  const adminClient = createAdminClient();
+  try {
+    const adminClient = createAdminClient();
 
-  const { data: adminData } = await adminClient
-    .from("admins")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .single();
+    const { data: adminData } = await adminClient
+      .from("admins")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .single();
 
-  // Get document to find file path
-  const { data: doc } = await adminClient.from("documents").select("*").eq("id", id).single();
-  if (!doc) return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    // Get document metadata
+    const { data: doc } = await adminClient.from("documents").select("*").eq("id", id).single();
+    if (!doc) return NextResponse.json({ error: "Document not found" }, { status: 404 });
 
-  // Delete from Google Drive or Supabase Storage (fallback for old docs)
-  if (doc.google_drive_file_id) {
-    const { deleteFileFromGoogleDrive } = await import("@/lib/google-drive");
-    await deleteFileFromGoogleDrive(doc.google_drive_file_id);
-  } else if (doc.file_url) {
-    // Extract storage path from URL for old Supabase Storage docs
-    const url = new URL(doc.file_url);
-    const pathParts = url.pathname.split("/storage/v1/object/public/documents/");
-    if (pathParts[1]) {
-      await adminClient.storage.from("documents").remove([decodeURIComponent(pathParts[1])]);
+    // ✅ FIX #2: Delete from Google Drive/Storage FIRST
+    // If Drive delete fails, DB record is untouched and we can retry
+    if (doc.google_drive_file_id) {
+      try {
+        await deleteFileFromGoogleDrive(doc.google_drive_file_id);
+      } catch (driveError: any) {
+        // Only fail if it's not a "not found" error (404 means already deleted, which is OK)
+        if (driveError.code !== 404 && driveError.status !== 404) {
+          return NextResponse.json(
+            { error: `Cannot delete file from storage: ${driveError.message}` },
+            { status: 500 }
+          );
+        }
+        // 404 is acceptable - file already deleted from Drive
+      }
+    } else if (doc.file_url) {
+      // Fallback: Old Supabase Storage files
+      try {
+        const url = new URL(doc.file_url);
+        const pathParts = url.pathname.split("/storage/v1/object/public/documents/");
+        if (pathParts[1]) {
+          await adminClient.storage.from("documents").remove([decodeURIComponent(pathParts[1])]);
+        }
+      } catch (storageError) {
+        console.warn("Failed to delete from Supabase Storage:", storageError);
+        // Non-blocking - continue with DB deletion
+      }
     }
+
+    // ✅ Delete from database (only if storage delete succeeded)
+    const { error: dbError } = await adminClient.from("documents").delete().eq("id", id);
+    if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
+
+    // ✅ Log the deletion (non-critical)
+    if (adminData) {
+      try {
+        await adminClient.from("upload_logs").insert({
+          admin_id: adminData.id,
+          document_id: null,
+          action: "delete",
+          file_name: doc.file_name,
+          notes: `Deleted "${doc.title}"`,
+        });
+      } catch (logError) {
+        console.error("Failed to log deletion action:", logError);
+      }
+    }
+
+    return NextResponse.json({ success: true, message: "Document deleted successfully" });
+  } catch (err: any) {
+    console.error("Delete error:", err);
+    return NextResponse.json({ error: err.message || "Deletion failed" }, { status: 500 });
   }
-
-  // Delete from database
-  const { error } = await adminClient.from("documents").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  // Log the deletion
-  if (adminData) {
-    await adminClient.from("upload_logs").insert({
-      admin_id: adminData.id,
-      document_id: null,
-      action: "delete",
-      file_name: doc.file_name,
-      notes: `Deleted "${doc.title}"`,
-    });
-  }
-
-  return NextResponse.json({ success: true });
 }
 

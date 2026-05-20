@@ -5,8 +5,10 @@ import {
   uploadPdfToGoogleDrive, 
   makeGoogleDriveFilePublic, 
   getGoogleDrivePreviewUrl, 
-  getGoogleDriveViewUrl 
+  getGoogleDriveViewUrl,
+  deleteFileFromGoogleDrive 
 } from "@/lib/google-drive";
+import { uploadLimiter, createRateLimitKey } from "@/lib/rate-limit";
 
 const MAX_FILE_SIZE_MB = Number(process.env.MAX_PDF_UPLOAD_SIZE_MB || "25");
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -15,6 +17,22 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // ✅ FIX #1: Add rate limiting
+  const rateLimitKey = createRateLimitKey(user.id, "upload");
+  const { success: rateLimitSuccess, retryAfter } = await uploadLimiter.check(rateLimitKey);
+  
+  if (!rateLimitSuccess) {
+    return NextResponse.json(
+      { 
+        error: `Upload limit exceeded. Try again in ${retryAfter} seconds.`,
+        retryAfter,
+      },
+      { status: 429 } // Too Many Requests
+    );
+  }
+
+  let googleDriveFileId: string | null = null;
 
   try {
     const formData = await request.formData();
@@ -93,25 +111,24 @@ export async function POST(request: NextRequest) {
     // Generate unique file name
     const timestamp = Math.floor(Date.now() / 1000);
     const sanitized = sanitizeFileName(file.name.replace('.pdf', ''));
-    // e.g. clean-name-1712233445.pdf
     const storagePath = `${sanitized}-${timestamp}.pdf`;
 
-    // Upload to Google Drive (with folder path)
+    // ✅ FIX #2: Upload to Google Drive FIRST
     const driveUploadResponse = await uploadPdfToGoogleDrive(file, storagePath, file.type, folderPath);
     
     if (!driveUploadResponse.id) {
       return NextResponse.json({ error: "Google Drive upload failed: No ID returned" }, { status: 500 });
     }
     
-    const fileId = driveUploadResponse.id;
+    googleDriveFileId = driveUploadResponse.id;
     
     // Make file viewable
-    await makeGoogleDriveFilePublic(fileId);
+    await makeGoogleDriveFilePublic(googleDriveFileId);
 
-    const previewUrl = getGoogleDrivePreviewUrl(fileId);
-    const viewUrl = getGoogleDriveViewUrl(fileId);
+    const previewUrl = getGoogleDrivePreviewUrl(googleDriveFileId);
+    const viewUrl = getGoogleDriveViewUrl(googleDriveFileId);
 
-    // Save document metadata
+    // ✅ FIX #3: Database insert with error handling & cleanup
     const { data: docData, error: docError } = await adminClient
       .from("documents")
       .insert({
@@ -123,8 +140,8 @@ export async function POST(request: NextRequest) {
         document_type_id: Number(metadata.document_type_id),
         exam_type_id: metadata.exam_type_id ? Number(metadata.exam_type_id) : null,
         year: metadata.year ? Number(metadata.year) : null,
-        file_url: null, // Legacy, can be null
-        google_drive_file_id: fileId,
+        file_url: null,
+        google_drive_file_id: googleDriveFileId,
         google_drive_preview_url: previewUrl,
         google_drive_view_url: viewUrl,
         file_name: file.name,
@@ -137,23 +154,56 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (docError) {
-      // If DB insert fails, we should delete the Drive file or at least it will be orphaned.
-      // Ignoring deletion for now to avoid complexity, but you might want to handle it.
-      return NextResponse.json({ error: docError.message }, { status: 500 });
+      // ❌ CLEANUP: Database insert failed, delete from Google Drive
+      try {
+        await deleteFileFromGoogleDrive(googleDriveFileId);
+        console.log(`✅ Cleaned up orphaned file: ${googleDriveFileId}`);
+      } catch (cleanupError) {
+        console.error(`⚠️ Failed to cleanup orphaned file ${googleDriveFileId}:`, cleanupError);
+        // Log for manual intervention
+      }
+      
+      return NextResponse.json(
+        { 
+          error: "Failed to save document metadata",
+          details: docError.message 
+        }, 
+        { status: 500 }
+      );
     }
 
-    // Log the upload
-    await adminClient.from("upload_logs").insert({
-      admin_id: adminData.id,
-      document_id: docData.id,
-      action: "upload",
-      file_name: file.name,
-      notes: `Uploaded "${metadata.title}" to Google Drive`,
-    });
+    // ✅ Log the upload (non-critical - if this fails, document is still valid)
+    try {
+      await adminClient.from("upload_logs").insert({
+        admin_id: adminData.id,
+        document_id: docData.id,
+        action: "upload",
+        file_name: file.name,
+        notes: `Uploaded "${metadata.title}" to Google Drive`,
+      });
+    } catch (logError) {
+      console.error("Failed to log upload action:", logError);
+      // Don't fail the request - document was created successfully
+    }
 
     return NextResponse.json(docData, { status: 201 });
+    
   } catch (err: any) {
     console.error("Upload error:", err);
-    return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 });
+    
+    // ❌ CLEANUP: If anything failed, try to cleanup orphaned Google Drive file
+    if (googleDriveFileId) {
+      try {
+        await deleteFileFromGoogleDrive(googleDriveFileId);
+        console.log(`✅ Cleaned up orphaned file after error: ${googleDriveFileId}`);
+      } catch (cleanupError) {
+        console.error(`⚠️ Failed to cleanup orphaned file ${googleDriveFileId}:`, cleanupError);
+      }
+    }
+    
+    return NextResponse.json(
+      { error: err.message || "Upload failed" }, 
+      { status: 500 }
+    );
   }
 }

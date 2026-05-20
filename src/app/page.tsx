@@ -52,8 +52,8 @@ export default async function HomePage() {
       <PublicHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-primary text-white">
-          <div className="max-w-content mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
+        <section className="bg-primary text-white overflow-hidden">
+          <div className="max-w-content mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center animate-fade-in">
             <Image
               src="/ustm-logo.png"
               alt="USTM Logo - University of Science and Technology Meghalaya"
@@ -61,19 +61,19 @@ export default async function HomePage() {
               height={72}
               sizes="72px"
               quality={60}
-              className="mx-auto mb-4 rounded-full bg-white p-1 shadow-lg"
-              // ✅ PERFORMANCE: Hero logo is LCP image
+              className="mx-auto mb-4 rounded-full bg-white p-1 shadow-lg animate-scale-in"
               priority
             />
-            <h1 className="text-2xl sm:text-4xl font-bold mb-3 leading-tight">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-3 leading-tight animate-slide-up" style={{ animationDelay: "100ms" }}>
               USTM Academic Resource Portal
             </h1>
-            <p className="text-primary-200 text-sm sm:text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-primary-200 text-sm sm:text-lg mb-8 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: "200ms" }}>
               Access previous year question papers and syllabus PDFs for all courses at the University of Science and Technology Meghalaya.
             </p>
             <Link
               href="/search"
-              className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-5 py-3 text-sm text-primary-100 transition-colors duration-200 max-w-lg w-full justify-center sm:justify-start"
+              className="inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-5 py-3 text-sm text-primary-100 transition-colors duration-200 max-w-lg w-full justify-center sm:justify-start animate-slide-up focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary"
+              style={{ animationDelay: "300ms" }}
             >
               <Search className="h-5 w-5 flex-shrink-0" />
               <span>Search for courses, subjects, or question papers...</span>
@@ -83,23 +83,22 @@ export default async function HomePage() {
 
         {/* Courses */}
         <section className="max-w-content mx-auto px-4 sm:px-6 py-10 sm:py-16">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 animate-fade-in">
             <h2 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2">
               <BookOpen className="h-6 w-6 text-primary" />
               Browse Courses
             </h2>
-            <Link href="/courses" className="text-sm text-primary font-medium hover:underline flex items-center gap-1 transition-colors duration-200">
+            <Link href="/courses" className="text-sm text-primary font-medium hover:underline flex items-center gap-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary rounded px-1">
               View All <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
           {!courses || courses.length === 0 ? (
-            <div className="text-center py-12 text-text-muted">
+            <div className="text-center py-12 text-text-muted animate-fade-in">
               <BookOpen className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p>No courses available yet. Check back soon.</p>
             </div>
           ) : (
-            // ✅ ANIMATIONS: Staggered list with scroll-triggered animations
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
               {courses.map((course: any, index: number) => {
                 const deptName = typeof course.department === "object" && course.department
@@ -108,7 +107,7 @@ export default async function HomePage() {
 
                 return (
                   <div key={course.id} role="listitem" className="will-animate animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                    <Link href={`/courses/${course.slug}`}>
+                    <Link href={`/courses/${course.slug}`} className="block h-full focus:outline-none focus:ring-2 focus:ring-primary rounded-lg">
                       <Card className="hover:shadow-md transition-shadow duration-200 h-full">
                         <CardContent className="p-5">
                           <h3 className="font-semibold text-text-main mb-1">{course.short_name}</h3>
@@ -131,12 +130,12 @@ export default async function HomePage() {
         {recentDocs && recentDocs.length > 0 && (
           <section className="bg-white border-t border-border">
             <div className="max-w-content mx-auto px-4 sm:px-6 py-10 sm:py-16">
-              <h2 className="text-xl sm:text-2xl font-bold text-text-main mb-6">Recently Added</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-text-main mb-6 animate-fade-in">Recently Added</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[250px]" role="list">
                 {recentDocs.map((doc: any, index: number) => (
                   <div key={doc.id} role="listitem" className="will-animate animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                    <Link href={`/view/${doc.id}`}>
-                      <Card className="hover:shadow-md transition-shadow duration-200">
+                    <Link href={`/view/${doc.id}`} className="block h-full focus:outline-none focus:ring-2 focus:ring-primary rounded-lg">
+                      <Card className="hover:shadow-md transition-shadow duration-200 h-full">
                         <CardContent className="p-4">
                           <p className="font-medium text-text-main text-sm mb-2 line-clamp-2">{doc.title}</p>
                           <div className="flex flex-wrap gap-2">

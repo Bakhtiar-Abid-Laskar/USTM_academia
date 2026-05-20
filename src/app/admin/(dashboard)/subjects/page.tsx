@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, FileText, Upload } from "lucide-react";
+import Link from "next/link";
 import { slugify } from "@/lib/utils";
 import type { Course, Semester, Subject } from "@/types";
 
@@ -145,8 +146,22 @@ export default function ManageSubjectsPage() {
                       <td className="px-6 py-3 text-text-muted hidden md:table-cell">{(sub as any).semester?.label || "-"}</td>
                       <td className="px-6 py-3 text-right">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(sub)}><Pencil className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => { setDeleting(sub); setDeleteDialogOpen(true); }}><Trash2 className="h-4 w-4 text-error" /></Button>
+                          <Link href={`/admin/documents?course_id=${sub.course_id}&semester_id=${sub.semester_id}&subject_id=${sub.id}`}>
+                            <Button variant="ghost" size="icon" title="View Documents">
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/documents/bulk-upload?course_id=${sub.course_id}&semester_id=${sub.semester_id}&subject_id=${sub.id}`}>
+                            <Button variant="ghost" size="icon" title="Bulk Upload">
+                              <Upload className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(sub)} title="Edit Subject">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => { setDeleting(sub); setDeleteDialogOpen(true); }} title="Delete Subject">
+                            <Trash2 className="h-4 w-4 text-error" />
+                          </Button>
                         </div>
                       </td>
                     </tr>

@@ -1,6 +1,24 @@
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, BookOpen, FileText, Shield } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About USTM Academia - Academic Resource Portal",
+  description: "Learn about USTM Academia, the official academic resource portal for University of Science and Technology Meghalaya. Free access to question papers and syllabi.",
+  keywords: ["USTM Academia", "about", "academic resources", "question papers", "syllabi"],
+  openGraph: {
+    title: "About USTM Academia",
+    description: "The official academic resource portal for University of Science and Technology Meghalaya",
+    url: "https://ustm-academia.vercel.app/about",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "About USTM Academia",
+    description: "Free question papers and syllabi for USTM courses",
+  },
+};
 
 export default function AboutPage() {
   return (

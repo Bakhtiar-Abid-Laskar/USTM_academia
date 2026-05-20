@@ -1,4 +1,4 @@
-import { SkeletonCard, SkeletonText } from "@/components/ui/skeleton";
+import { SkeletonCard } from "@/components/ui/skeleton";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 
 /**

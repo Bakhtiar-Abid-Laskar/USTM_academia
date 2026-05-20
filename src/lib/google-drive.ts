@@ -157,3 +157,110 @@ export function getGoogleDrivePreviewUrl(fileId: string) {
 export function getGoogleDriveViewUrl(fileId: string) {
   return `https://drive.google.com/file/d/${fileId}/view`;
 }
+
+// ─── Bulk Upload Helpers ───────────────────────────────────────
+
+/** Export the drive client for direct use in bulk upload route */
+export function getDriveClientExported() {
+  return getDriveClient();
+}
+
+/** Check if a file with the given name already exists in a folder */
+export async function checkFileExistsInFolder(
+  drive: any,
+  folderId: string,
+  fileName: string
+): Promise<{ exists: boolean; existingId?: string }> {
+  const res = await drive.files.list({
+    q: `name='${fileName.replace(/'/g, "\\'")}' and '${folderId}' in parents and trashed=false`,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+
+  if (res.data.files && res.data.files.length > 0) {
+    return { exists: true, existingId: res.data.files[0].id };
+  }
+  return { exists: false };
+}
+
+/** Upload a PDF to Google Drive with exponential backoff retry on 403/500 errors */
+export async function uploadPdfWithRetry(
+  drive: any,
+  buffer: Buffer,
+  fileName: string,
+  mimeType: string,
+  folderId: string,
+  maxRetries: number = 3
+): Promise<{ id: string; webViewLink?: string; webContentLink?: string }> {
+  let lastError: any;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const fileMetadata = {
+        name: fileName,
+        parents: [folderId],
+      };
+
+      const media = {
+        mimeType,
+        body: bufferToStream(buffer),
+      };
+
+      const response = await drive.files.create({
+        requestBody: fileMetadata,
+        media,
+        fields: "id, webViewLink, webContentLink",
+      });
+
+      return response.data;
+    } catch (error: any) {
+      lastError = error;
+      const status = error?.response?.status || error?.code;
+
+      if (status === 404) {
+        // Folder was deleted mid-upload; caller should re-create and retry
+        throw new Error(`DRIVE_404: Target folder not found. It may have been deleted.`);
+      }
+
+      if (status === 409) {
+        // Conflict — duplicate; try to find existing file
+        const existing = await checkFileExistsInFolder(drive, folderId, fileName);
+        if (existing.exists && existing.existingId) {
+          return { id: existing.existingId };
+        }
+        throw error;
+      }
+
+      // Retry on 403 (rate limit) and 500 (server error) with exponential backoff
+      if ((status === 403 || status === 500) && attempt < maxRetries) {
+        const waitMs = Math.pow(2, attempt + 1) * 1000; // 2s, 4s, 8s
+        console.warn(`Drive API ${status} error, retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw lastError;
+}
+
+/** Set custom properties on a Drive file (title, description as appProperties) */
+export async function setDriveFileProperties(
+  drive: any,
+  fileId: string,
+  properties: Record<string, string>
+): Promise<void> {
+  try {
+    await drive.files.update({
+      fileId,
+      requestBody: {
+        appProperties: properties,
+      },
+    });
+  } catch (error: any) {
+    console.error(`Failed to set properties on Drive file ${fileId}:`, error.message);
+    // Non-critical — don't throw
+  }
+}

@@ -1,0 +1,22 @@
+# USTM Academia Robots File
+# Allow all search engines to crawl
+
+User-agent: *
+Allow: /
+Allow: /courses
+Allow: /search
+Allow: /about
+Allow: /help
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Allow search crawling
+Allow: /api/search
+
+# Sitemap location
+Sitemap: https://ustm-academia.vercel.app/sitemap.xml
+
+# Crawl delay (optional - 1 second delay between requests)
+Crawl-delay: 1
