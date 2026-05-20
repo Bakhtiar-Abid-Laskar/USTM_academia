@@ -6,7 +6,6 @@ import {
   InstantSearch, 
   SearchBox, 
   Hits, 
-  RefinementList, 
   Pagination,
   useInstantSearch
 } from 'react-instantsearch';
@@ -96,57 +95,9 @@ export default function GlobalSearch() {
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       <InstantSearch searchClient={searchClient as any} indexName="documents_index">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          
-          {/* Sidebar Filters */}
-          <div className="col-span-1 space-y-6 hidden md:block">
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-              <h4 className="font-semibold mb-3 text-slate-800 flex items-center justify-between">
-                Document Type
-              </h4>
-              <RefinementList 
-                attribute="document_type" 
-                classNames={{
-                  label: 'flex items-center gap-3 text-sm text-slate-600 my-2 cursor-pointer hover:text-blue-600 transition-colors',
-                  checkbox: 'rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4',
-                  count: 'bg-slate-100 px-2 py-0.5 rounded-full text-xs ml-auto text-slate-500',
-                  list: 'space-y-2'
-                }}
-              />
-            </div>
-            
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-              <h4 className="font-semibold mb-3 text-slate-800">Department</h4>
-              <RefinementList 
-                attribute="department" 
-                searchable 
-                searchablePlaceholder="Search departments..."
-                classNames={{
-                  label: 'flex items-center gap-3 text-sm text-slate-600 my-2 cursor-pointer hover:text-blue-600 transition-colors',
-                  checkbox: 'rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4',
-                  count: 'bg-slate-100 px-2 py-0.5 rounded-full text-xs ml-auto text-slate-500',
-                  list: 'space-y-2',
-                  searchBox: 'mb-3 [&_input]:w-full [&_input]:p-2 [&_input]:text-sm [&_input]:rounded-md [&_input]:border [&_input]:border-slate-200 [&_input]:outline-none [&_input]:focus:border-blue-500'
-                }}
-              />
-            </div>
-
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-              <h4 className="font-semibold mb-3 text-slate-800">Exam Type</h4>
-              <RefinementList 
-                attribute="exam_type" 
-                classNames={{
-                  label: 'flex items-center gap-3 text-sm text-slate-600 my-2 cursor-pointer hover:text-blue-600 transition-colors',
-                  checkbox: 'rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4',
-                  count: 'bg-slate-100 px-2 py-0.5 rounded-full text-xs ml-auto text-slate-500',
-                  list: 'space-y-2'
-                }}
-              />
-            </div>
-          </div>
-
+        <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
           {/* Main Search Area */}
-          <div className="col-span-1 md:col-span-3">
+          <div className="w-full">
             <div className="relative mb-6">
               <SearchBox 
                 placeholder="Search subjects, PYQs, syllabuses..."
