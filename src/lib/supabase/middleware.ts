@@ -35,7 +35,24 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // ✅ FIX: Gracefully handle auth errors (missing/expired refresh token)
+  let user = null;
+  try {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    user = authUser;
+  } catch (error: any) {
+    // Log auth errors but don't crash middleware
+    // This can happen when:
+    // 1. Refresh token is expired/missing
+    // 2. User's session is invalid
+    // 3. Supabase credentials are invalid
+    console.warn("Auth check failed in middleware:", {
+      code: error?.code,
+      message: error?.message,
+      path: request.nextUrl.pathname,
+    });
+    // Continue with user = null, which will trigger re-authentication
+  }
 
   if (user && !isLoginPage) {
     const lastActive = request.cookies.get("admin_last_active")?.value;
@@ -44,7 +61,11 @@ export async function updateSession(request: NextRequest) {
 
     // If last_active is missing (browser restart) OR timeout exceeded (30 mins)
     if (!lastActive || (now - parseInt(lastActive, 10) > THIRTY_MINUTES)) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.warn("Failed to sign out during session timeout:", error);
+      }
       response = NextResponse.redirect(new URL("/admin/login?expired=true", request.url));
       response.cookies.delete("admin_last_active");
       return response;
