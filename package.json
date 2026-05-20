@@ -20,6 +20,7 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
+    "algoliasearch": "^4.24.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -30,6 +31,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.76.0",
+    "react-instantsearch": "^7.33.0",
     "react-pdf": "^10.4.1",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
