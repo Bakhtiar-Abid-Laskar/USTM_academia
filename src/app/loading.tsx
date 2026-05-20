@@ -1,4 +1,4 @@
-import { SkeletonCard } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 
 /**
@@ -7,36 +7,40 @@ import { PublicHeader, PublicFooter } from "@/components/public/layout";
  */
 export default function HomeLoading() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-slate-50">
       <PublicHeader />
-      <main className="flex-1">
-        {/* Hero skeleton */}
-        <section className="bg-primary text-white">
-          <div className="max-w-content mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
-            <div className="skeleton-shimmer h-20 w-20 rounded-full mx-auto mb-4" />
-            <div className="skeleton-shimmer h-10 w-2/3 rounded mx-auto mb-3" />
-            <div className="skeleton-shimmer h-6 w-3/4 rounded mx-auto mb-8" />
-            <div className="skeleton-shimmer h-12 w-48 rounded mx-auto" />
+      <main className="flex-1 w-full relative">
+        {/* Premium Hero skeleton */}
+        <section className="bg-[#0f172a] pt-24 pb-32 px-4 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/50 to-[#0f172a] z-0" />
+          <div className="max-w-4xl mx-auto relative z-10">
+            <Skeleton className="h-24 w-24 rounded-full mx-auto mb-8 bg-white/10" />
+            <Skeleton className="h-16 w-3/4 rounded-lg mx-auto mb-6 bg-white/10" />
+            <Skeleton className="h-6 w-1/2 rounded-md mx-auto mb-10 bg-white/10" />
+            <Skeleton className="h-16 w-full max-w-2xl rounded-2xl mx-auto bg-white/10" />
           </div>
         </section>
 
         {/* Browse courses section skeleton */}
-        <section className="py-12 sm:py-16">
-          <div className="max-w-content mx-auto px-4 sm:px-6">
-            <div className="skeleton-shimmer h-8 w-1/4 rounded mb-6" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 -mt-10 relative z-20">
+          <div className="flex items-center justify-between mb-8 bg-white/80 p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <Skeleton className="h-8 w-48 rounded-lg" />
+            <Skeleton className="h-6 w-24 rounded-md" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         </section>
 
         {/* Recently added section skeleton */}
-        <section className="bg-white border-t border-border">
-          <div className="max-w-content mx-auto px-4 sm:px-6 py-10 sm:py-16">
-            <div className="skeleton-shimmer h-8 w-1/4 rounded mb-6" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[250px]">
+        <section className="bg-white border-t border-slate-200 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <Skeleton className="h-8 w-48 rounded-lg mb-8" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}

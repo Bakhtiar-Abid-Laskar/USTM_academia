@@ -16,9 +16,6 @@ const nextConfig = {
     config.resolve.alias.canvas = false;
 
     // On Windows, filesystem cache compression ('gzip') causes random ENOENT rename crashes
-    // due to asynchronous file locks during fast hot-reloads.
-    // Instead of compressing, we configure infrastructure logging to only show errors,
-    // which completely filters out the harmless "Serializing big strings" warning.
     config.infrastructureLogging = {
       level: "error",
     };
@@ -33,6 +30,27 @@ const nextConfig = {
   compress: true,
   // ✅ OPTIMIZED: React strict mode for development warnings
   reactStrictMode: true,
+  // ✅ PWA/TWA: Custom headers for Digital Asset Links and Service Worker
+  async headers() {
+    return [
+      {
+        // Serve Digital Asset Links with correct content-type
+        source: "/.well-known/assetlinks.json",
+        headers: [
+          { key: "Content-Type", value: "application/json" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
+      },
+      {
+        // Service Worker needs to control the entire scope
+        source: "/sw.js",
+        headers: [
+          { key: "Service-Worker-Allowed", value: "/" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
