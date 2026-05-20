@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import SearchContent from "./search-content";
+import GlobalSearch from "@/components/Search/GlobalSearch";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 import { Loader2 } from "lucide-react";
 
@@ -25,7 +25,7 @@ export default function SearchPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <PublicHeader />
-      <main className="flex-1">
+      <main className="flex-1 py-8">
         <Suspense
           fallback={
             <div className="flex items-center justify-center py-20">
@@ -33,7 +33,7 @@ export default function SearchPage() {
             </div>
           }
         >
-          <SearchContent />
+          <GlobalSearch />
         </Suspense>
       </main>
       <PublicFooter />
