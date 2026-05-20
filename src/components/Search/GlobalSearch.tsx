@@ -93,26 +93,37 @@ const HitCard = ({ hit }: { hit: AlgoliaDocumentHit }) => {
 
 export default function GlobalSearch() {
   return (
-    <div className="w-full max-w-7xl mx-auto p-4">
-      <InstantSearch searchClient={searchClient as any} indexName="documents_index">
-        <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
-          {/* Main Search Area */}
-          <div className="w-full">
-            <div className="relative mb-6">
-              <SearchBox 
-                placeholder="Search subjects, PYQs, syllabuses..."
-                classNames={{
-                  root: 'w-full shadow-sm rounded-xl',
-                  form: 'relative flex items-center',
-                  input: 'w-full p-4 pl-12 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-lg transition-all',
-                  submitIcon: 'absolute left-4 text-slate-400 w-5 h-5',
-                  resetIcon: 'absolute right-12 text-slate-400 w-4 h-4 hover:text-slate-600 cursor-pointer'
-                }}
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                <LoadingIndicator />
+    <div className="w-full">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white pt-20 pb-24 px-4 shadow-inner mb-10 text-center rounded-b-3xl">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
+          Find Your Study Materials <br className="hidden md:block"/> In Seconds.
+        </h1>
+        <p className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto opacity-90">
+          Search thousands of USTM question papers, syllabi, and academic documents instantly.
+        </p>
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-4 pb-12">
+        <InstantSearch searchClient={searchClient as any} indexName="documents_index">
+          <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+            {/* Main Search Area */}
+            <div className="w-full -mt-24 z-10 relative">
+              <div className="relative mb-8">
+                <SearchBox 
+                  placeholder="Search subjects, PYQs, syllabuses..."
+                  classNames={{
+                    root: 'w-full shadow-2xl rounded-2xl bg-white',
+                    form: 'relative flex items-center',
+                    input: 'w-full p-5 pl-14 pr-12 rounded-2xl border-0 focus:ring-2 focus:ring-blue-500 outline-none text-xl transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden',
+                    submitIcon: 'absolute left-5 text-blue-500 w-6 h-6',
+                    resetIcon: 'absolute right-5 text-slate-300 w-5 h-5 hover:text-slate-500 cursor-pointer transition-colors'
+                  }}
+                />
+                <div className="absolute right-14 top-1/2 -translate-y-1/2">
+                  <LoadingIndicator />
+                </div>
               </div>
-            </div>
 
             {/* Results Grid */}
             <Hits 
@@ -139,6 +150,7 @@ export default function GlobalSearch() {
           
         </div>
       </InstantSearch>
+      </div>
     </div>
   );
 }
