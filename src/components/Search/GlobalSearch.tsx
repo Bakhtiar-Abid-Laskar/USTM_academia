@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import algoliasearch from 'algoliasearch/lite';
 import { 
   InstantSearch, 
@@ -137,63 +138,62 @@ function FilterDropdown({ attribute, label }: { attribute: string, label: string
 // 3. Premium Card Design (Semantic <article>)
 const HitCard = ({ hit }: { hit: AlgoliaDocumentHit }) => {
   return (
-    <article className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative overflow-hidden">
+    <Link href={`/view/${hit.objectID}`} className="block h-full">
+      <article className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative overflow-hidden">
       
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity -mr-10 -mt-10 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity -mr-10 -mt-10 pointer-events-none" />
 
-      {/* Top: Title & Year */}
-      <div className="flex justify-between items-start mb-4 gap-4 relative z-10">
-        <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-700 line-clamp-2 leading-snug transition-colors">
-          {hit.title}
-        </h3>
-        {hit.year && (
-          <span className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1.5 rounded-md font-bold whitespace-nowrap border border-slate-200 shadow-sm">
-            {hit.year}
-          </span>
-        )}
-      </div>
-      
-      {/* Middle: Details */}
-      <div className="text-sm text-slate-600 mb-6 flex-grow space-y-2.5 relative z-10">
-        {hit.subject && (
-          <div className="flex items-start gap-2.5">
-            <BookOpen className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-            <span className="line-clamp-1 font-medium text-slate-700">{hit.subject.name} <span className="text-slate-400 text-xs font-normal">({hit.subject.code})</span></span>
-          </div>
-        )}
-        {hit.course && (
-          <div className="flex items-start gap-2.5">
-            <GraduationCap className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-            <span className="line-clamp-1 font-medium text-slate-700">{hit.course.name} {hit.semester && <span className="text-blue-600 font-bold ml-1">· Sem {hit.semester}</span>}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Bottom: Badges & Action */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 relative z-10 mt-auto">
-        <div className="flex flex-wrap gap-2">
-          {hit.document_type && (
-            <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-md font-medium border border-blue-100">
-              <FileText size={12} /> {hit.document_type}
-            </span>
-          )}
-          {hit.exam_type && (
-            <span className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md font-medium border border-indigo-100">
-              {hit.exam_type}
+        {/* Top: Title & Year */}
+        <div className="flex justify-between items-start mb-4 gap-4 relative z-10">
+          <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-700 line-clamp-2 leading-snug transition-colors">
+            {hit.title}
+          </h3>
+          {hit.year && (
+            <span className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1.5 rounded-md font-bold whitespace-nowrap border border-slate-200 shadow-sm">
+              {hit.year}
             </span>
           )}
         </div>
         
-        <a 
-          href={hit.file_url || '#'} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 group-hover:underline underline-offset-4 bg-blue-50/50 px-3 py-1.5 rounded-lg group-hover:bg-blue-100"
-        >
-          View <span className="hidden sm:inline">Document</span> &rarr;
-        </a>
-      </div>
-    </article>
+        {/* Middle: Details */}
+        <div className="text-sm text-slate-600 mb-6 flex-grow space-y-2.5 relative z-10">
+          {hit.subject && (
+            <div className="flex items-start gap-2.5">
+              <BookOpen className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <span className="line-clamp-1 font-medium text-slate-700">{hit.subject.name} <span className="text-slate-400 text-xs font-normal">({hit.subject.code})</span></span>
+            </div>
+          )}
+          {hit.course && (
+            <div className="flex items-start gap-2.5">
+              <GraduationCap className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <span className="line-clamp-1 font-medium text-slate-700">{hit.course.name} {hit.semester && <span className="text-blue-600 font-bold ml-1">· Sem {hit.semester}</span>}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom: Badges & Action */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 relative z-10 mt-auto">
+          <div className="flex flex-wrap gap-2">
+            {hit.document_type && (
+              <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-md font-medium border border-blue-100">
+                <FileText size={12} /> {hit.document_type}
+              </span>
+            )}
+            {hit.exam_type && (
+              <span className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md font-medium border border-indigo-100">
+                {hit.exam_type}
+              </span>
+            )}
+          </div>
+          
+          <span 
+            className="text-sm font-bold text-blue-600 group-hover:text-blue-800 transition-colors flex items-center gap-1 group-hover:underline underline-offset-4 bg-blue-50/50 px-3 py-1.5 rounded-lg group-hover:bg-blue-100"
+          >
+            View <span className="hidden sm:inline">Document</span> &rarr;
+          </span>
+        </div>
+      </article>
+    </Link>
   );
 };
 
