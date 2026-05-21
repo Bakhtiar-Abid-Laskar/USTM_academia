@@ -1,38 +1,48 @@
-import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
 
+/**
+ * Loading skeleton for the semester subjects page.
+ * Matches the actual page layout: simple max-w-content container
+ * with breadcrumb, heading, and subject card grid.
+ */
 export default function SemesterLoading() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen">
       <PublicHeader />
-      <main className="flex-1 w-full">
-        {/* Minimal Hero Header Skeleton */}
-        <div className="bg-white border-b border-slate-200 py-12 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-            {/* Breadcrumb skeleton */}
-            <nav className="text-sm text-slate-500 mb-4 flex flex-wrap gap-2 items-center">
-              <Skeleton className="h-4 w-12 rounded" />
-              <span>›</span>
-              <Skeleton className="h-4 w-16 rounded" />
-              <span>›</span>
-              <Skeleton className="h-4 w-20 rounded" />
-              <span>›</span>
-              <Skeleton className="h-4 w-24 rounded" />
-            </nav>
+      <main className="flex-1">
+        <div className="max-w-content mx-auto px-4 sm:px-6 py-8">
+          {/* Breadcrumb skeleton */}
+          <nav className="text-sm text-slate-500 mb-6 font-medium flex items-center flex-wrap gap-2">
+            <Skeleton className="h-4 w-12 rounded" />
+            <Skeleton className="w-4 h-4 rounded" />
+            <Skeleton className="h-4 w-16 rounded" />
+            <Skeleton className="w-4 h-4 rounded" />
+            <Skeleton className="h-4 w-20 rounded" />
+            <Skeleton className="w-4 h-4 rounded" />
+            <Skeleton className="h-4 w-24 rounded" />
+          </nav>
 
-            <Skeleton className="h-10 w-1/4 rounded-lg mb-4" />
-            <Skeleton className="h-6 w-1/3 rounded-md" />
+          {/* Title + subtitle */}
+          <div className="mb-8">
+            <Skeleton className="h-8 w-48 rounded-lg mb-1" />
+            <Skeleton className="h-5 w-64 rounded-md" />
           </div>
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-          <Skeleton className="h-8 w-48 rounded-lg mb-8" />
-
-          {/* Subjects grid skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Subject cards grid — matches grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonCard key={i} />
+              <div
+                key={i}
+                className="border border-slate-200 rounded-xl bg-white shadow-sm p-5 animate-pulse"
+              >
+                <Skeleton className="h-5 w-3/4 rounded mb-1" />
+                <Skeleton className="h-3 w-24 rounded mb-3" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-28 rounded-full" />
+                </div>
+              </div>
             ))}
           </div>
         </div>

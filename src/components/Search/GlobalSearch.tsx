@@ -24,7 +24,7 @@ type AlgoliaDocumentHit = {
   year: number;
   file_url: string;
   status: string;
-  subject: { name: string; code: string };
+  subject: { name: string; code?: string; subject_code?: string };
   course: { name: string; short_name: string };
   department: string;
   semester: number;
@@ -75,15 +75,15 @@ function CustomSearchBox() {
 
        {/* Chips */}
        <div className="flex flex-wrap justify-center gap-2">
-         {popularSearches.map((chip, idx) => (
-           <button 
-             key={idx}
-             onClick={() => refine(chip)}
-             className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-xs md:text-sm font-medium transition-all backdrop-blur-md shadow-sm hover:scale-105"
-           >
-             {chip}
-           </button>
-         ))}
+          {popularSearches.map((chip, idx) => (
+            <button 
+              key={idx}
+              onClick={() => refine(chip)}
+              className="px-4 py-1.5 bg-white/90 hover:bg-white text-slate-800 border border-white/80 rounded-full text-xs md:text-sm font-semibold transition-all backdrop-blur-md shadow-sm hover:scale-105 hover:shadow-md"
+            >
+              {chip}
+            </button>
+          ))}
        </div>
     </div>
   )
@@ -160,7 +160,7 @@ const HitCard = ({ hit }: { hit: AlgoliaDocumentHit }) => {
           {hit.subject && (
             <div className="flex items-start gap-2.5">
               <BookOpen className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <span className="line-clamp-1 font-medium text-slate-700">{hit.subject.name} <span className="text-slate-400 text-xs font-normal">({hit.subject.code})</span></span>
+              <span className="line-clamp-1 font-medium text-slate-700">{hit.subject.name}{(hit.subject.code || hit.subject.subject_code) ? <span className="text-slate-400 text-xs font-normal"> ({hit.subject.code || hit.subject.subject_code})</span> : null}</span>
             </div>
           )}
           {hit.course && (

@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
-import { FileText, Download, Eye, Inbox } from "lucide-react";
+import { FileText, Download, Eye, Inbox, ChevronRight } from "lucide-react";
 
 // Enable ISR: Cache page for 1 hour, then revalidate in background
 export const revalidate = 3600; // 1 hour in seconds
@@ -45,16 +45,16 @@ export default async function SubjectDocumentsPage({
       <PublicHeader />
       <main className="flex-1">
         <div className="max-w-content mx-auto px-4 sm:px-6 py-8">
-          <nav className="text-sm text-text-muted mb-6 flex flex-wrap gap-1">
-            <Link href="/" className="hover:text-primary">Home</Link>
-            <span>›</span>
-            <Link href="/courses" className="hover:text-primary">Courses</Link>
-            <span>›</span>
-            <Link href={`/courses/${course.slug}`} className="hover:text-primary">{course.short_name}</Link>
-            <span>›</span>
-            <Link href={`/courses/${course.slug}/${params.semester}`} className="hover:text-primary">{semester.label}</Link>
-            <span>›</span>
-            <span className="text-text-main font-medium">{subject.name}</span>
+          <nav className="text-sm text-slate-500 mb-6 font-medium flex items-center flex-wrap gap-2" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1 -ml-1">Home</Link>
+            <ChevronRight className="w-4 h-4 text-slate-300" />
+            <Link href="/courses" className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">Courses</Link>
+            <ChevronRight className="w-4 h-4 text-slate-300" />
+            <Link href={`/courses/${course.slug}`} className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">{course.short_name}</Link>
+            <ChevronRight className="w-4 h-4 text-slate-300" />
+            <Link href={`/courses/${course.slug}/${params.semester}`} className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">{semester.label}</Link>
+            <ChevronRight className="w-4 h-4 text-slate-300" />
+            <span className="text-slate-800 font-semibold">{subject.name}</span>
           </nav>
 
           <div className="mb-8">

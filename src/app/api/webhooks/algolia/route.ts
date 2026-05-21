@@ -45,7 +45,10 @@ async function syncDocumentsToAlgolia(documentIds: string[]) {
     year: data.year,
     file_url: data.file_url,
     status: 'published',
-    subject: Array.isArray(data.subjects) ? data.subjects[0] : data.subjects,
+    subject: (() => {
+      const s = Array.isArray(data.subjects) ? data.subjects[0] : data.subjects;
+      return s ? { name: s.name, code: s.subject_code, subject_code: s.subject_code } : null;
+    })(),
     course: Array.isArray(data.courses) ? data.courses[0] : data.courses,
     department: Array.isArray(data.departments) ? data.departments[0]?.name : data.departments?.name,
     semester: Array.isArray(data.semesters) ? data.semesters[0]?.semester_number : data.semesters?.semester_number,
