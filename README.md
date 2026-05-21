@@ -6,12 +6,13 @@
 
 *Find Your Papers. Ace Your Exams.*
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
+[![Live Site](https://img.shields.io/badge/Live-ustm--academia.vercel.app-blue?style=flat-square&logo=vercel)](https://ustm-academia.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.35-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
-[![Supabase](https://img.shields.io/badge/Supabase-Database-green?style=flat-square&logo=supabase)](https://supabase.com)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?style=flat-square&logo=supabase)](https://supabase.com)
+[![Algolia](https://img.shields.io/badge/Algolia-Search-5468FF?style=flat-square&logo=algolia)](https://algolia.com)
 
 </div>
 
@@ -26,23 +27,25 @@
 - [Usage](#-usage)
 - [Project Structure](#-project-structure)
 - [API Reference](#-api-reference)
+- [PWA Support](#-pwa-support)
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
-- [License](#-license)
 - [Acknowledgements](#-acknowledgements)
 
 ---
 
 ## 🎯 Overview
 
-**USTM Academia** is a centralized, web-based academic resource portal built exclusively for 
-students of the **University of Science and Technology Meghalaya (USTM)**. The platform provides 
-structured, on-demand access to critical academic resources—**previous year question papers** 
-and **course syllabi**—organized logically by Course → Semester → Subject.
+**USTM Academia** is a centralized, web-based academic resource portal built exclusively for
+students of the **University of Science and Technology Meghalaya (USTM)**. The platform provides
+structured, on-demand access to critical academic resources — **previous year question papers (PYQs)**
+and **course syllabi** — organized logically by **Course → Semester → Subject**.
+
+**🌐 Live at:** [ustm-academia.vercel.app](https://ustm-academia.vercel.app)
 
 ### Problem Solved
 
-USTM students currently lack a single authoritative source for question papers and syllabi, 
+USTM students currently lack a single authoritative source for question papers and syllabi,
 leading to:
 - ❌ Students relying on informal WhatsApp groups and unverified sources
 - ❌ Inefficient manual searches across fragmented platforms
@@ -53,48 +56,50 @@ leading to:
 
 USTM Academia eliminates these challenges by providing:
 - ✅ One centralized, reliable repository for all academic documents
-- ✅ Fast, mobile-friendly access without login requirements
+- ✅ Fast, mobile-friendly access — no login required for students
+- ✅ Algolia-powered instant search across all documents
 - ✅ Secure admin dashboard for content management
-- ✅ Advanced search and filtering capabilities
-- ✅ Historical archives for exam trend analysis
+- ✅ PWA support — installable on mobile devices
+- ✅ Google Drive integration for scalable PDF storage
 
 ### Key Value Proposition
 
-🚀 **For Students:** Instant, verified access to academic resources without friction.  
-🔐 **For Admins:** Centralized content management with role-based access control.  
-📱 **For Everyone:** Fully responsive, optimized for mobile and desktop devices.
+🚀 **For Students:** Instant, verified access to PYQs and syllabi — zero friction, no login.
+🔐 **For Admins:** Centralized content management with Supabase Auth and role-based access.
+📱 **For Everyone:** Fully responsive PWA, optimized for mobile and desktop.
 
 ---
 
 ## ✨ Features
 
 - **🌐 Public Student Portal**
-  - ✅ Browse courses, semesters, and subjects without login
-  - ✅ Advanced search and multi-filter capabilities
-  - ✅ In-browser PDF viewer with download option
-  - ✅ Fully responsive mobile-first design
-  - ✅ Instant, cached document access
+  - Browse courses, semesters, and subjects without login
+  - Algolia-powered instant search with faceted filters (Department, Course, Type, Exam, Year)
+  - In-browser PDF viewing via Google Drive embed
+  - Download PDFs directly
+  - Fully responsive mobile-first design with smooth animations
 
 - **🔐 Secure Admin Dashboard**
-  - ✅ Role-based authentication and authorization
-  - ✅ Manage courses, semesters, subjects, and documents
-  - ✅ Bulk PDF upload with Google Drive integration
-  - ✅ Real-time upload logs and audit trail
-  - ✅ Settings management for administrators
+  - Supabase-based authentication and authorization
+  - Full CRUD for Departments, Courses, Semesters, Subjects, and Documents
+  - Single and bulk PDF upload with Google Drive integration
+  - Document replacement and metadata editing
+  - Real-time upload logs and audit trail
+  - Admin settings management
 
 - **📄 Document Management**
-  - ✅ Support for multiple document types (Syllabus, Question Papers, etc.)
-  - ✅ Support for multiple exam types (Mid-term, End-semester, etc.)
-  - ✅ Metadata tagging and categorization
-  - ✅ Scalable Google Drive storage backend
-  - ✅ Secure file access and permissions
+  - Document types: Syllabus, Previous Year Question Papers
+  - Exam types: Mid-term, End-semester
+  - Metadata tagging: year, exam type, document type, subject code
+  - Google Drive storage backend with auto-generated preview/view/download URLs
+  - Algolia auto-sync via Supabase webhooks
 
 - **⚡ Performance & Accessibility**
-  - ✅ Optimized Lighthouse scores (Core Web Vitals compliant)
-  - ✅ Server-side rendering for fast initial loads
-  - ✅ Incremental static regeneration (ISR)
-  - ✅ WCAG 2.1 AA accessibility standards
-  - ✅ SEO-optimized metadata and schema
+  - Server-side rendering (SSR) and Incremental Static Regeneration (ISR, 1-hour cache)
+  - PWA with offline fallback page and service worker
+  - WCAG 2.1 AA accessible UI (focus rings, ARIA labels, contrast compliance)
+  - SEO-optimized: Open Graph, Twitter Cards, dynamic metadata, sitemap.xml, robots.txt
+  - Rate-limited search API to prevent abuse
 
 ---
 
@@ -102,17 +107,19 @@ USTM Academia eliminates these challenges by providing:
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | Next.js 14, React 18, TypeScript | Modern, type-safe UI framework |
-| **Styling** | Tailwind CSS, PostCSS | Utility-first responsive design |
-| **UI Components** | Radix UI, Lucide Icons | Accessible, composable UI library |
-| **Forms** | React Hook Form, Zod | Type-safe form handling & validation |
-| **Backend** | Next.js App Router, Supabase | Serverless API endpoints & database |
-| **Database** | PostgreSQL (Supabase) | Relational data storage |
+| **Framework** | Next.js 14.2.35 (App Router) | Server components, SSR, ISR, API routes |
+| **Language** | TypeScript 5 | End-to-end type safety |
+| **UI** | React 18 | Component-based UI |
+| **Styling** | Tailwind CSS 3.4, PostCSS | Utility-first responsive design |
+| **UI Components** | Radix UI, shadcn/ui, Lucide Icons | Accessible, composable UI primitives |
+| **Forms** | React Hook Form 7, Zod 4 | Type-safe form handling & validation |
+| **Database** | PostgreSQL (Supabase) | Relational data with full-text search |
 | **Authentication** | Supabase Auth | Secure admin authentication |
-| **File Storage** | Google Drive API | Scalable PDF storage backend |
-| **PDF Viewer** | react-pdf | Browser-based document viewing |
-| **Security** | bcryptjs | Password hashing & encryption |
-| **Type Safety** | TypeScript 5 | Full end-to-end type coverage |
+| **Search** | Algolia (InstantSearch React 7) | Real-time faceted search |
+| **File Storage** | Google Drive API (googleapis) | Scalable PDF storage & preview |
+| **PDF Viewer** | Google Drive embed + react-pdf | Browser-based document viewing |
+| **Security** | bcryptjs, rate limiting | Password hashing & API protection |
+| **Hosting** | Vercel | Edge-optimized deployment |
 
 ---
 
@@ -121,25 +128,25 @@ USTM Academia eliminates these challenges by providing:
 ### Prerequisites
 
 - **Node.js** ≥ 18.0.0
-- **pnpm** ≥ 8.0.0 (or npm/yarn)
+- **pnpm** ≥ 8.0.0 (recommended) or npm/yarn
 - **Git**
-- **Supabase Account** (free tier available)
+- **Supabase Account** — [supabase.com](https://supabase.com) (free tier)
 - **Google Cloud Project** with Drive API enabled
+- **Algolia Account** — [algolia.com](https://algolia.com) (free tier)
 
 ### Installation
 
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/yourusername/ustm-academia.git
-cd ustm-academia
+git clone https://github.com/Bakhtiar-Abid-Laskar/USTM_academia.git
+cd USTM_academia
 ```
 
 2. **Install dependencies:**
 
 ```bash
 pnpm install
-# or: npm install / yarn install
 ```
 
 3. **Set up environment variables:**
@@ -152,52 +159,65 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Google Drive
-GOOGLE_SERVICE_ACCOUNT_JSON='{"type":"service_account","project_id":"...",...}'
+# Google Drive (OAuth2 flow)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:3000/oauth2callback
+GOOGLE_REFRESH_TOKEN=your-refresh-token
 GOOGLE_DRIVE_FOLDER_ID=your-google-drive-folder-id
-MAX_PDF_UPLOAD_SIZE_MB=25
 
-# Admin secret
-ADMIN_SECRET_KEY=your-secure-random-key
+# App Config
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+MAX_PDF_UPLOAD_SIZE_MB=50
+
+# Algolia
+NEXT_PUBLIC_ALGOLIA_APP_ID=your-algolia-app-id
+NEXT_PUBLIC_ALGOLIA_SEARCH_KEY=your-algolia-search-key
+ALGOLIA_ADMIN_KEY=your-algolia-admin-key
+
+# Supabase Webhook Secrets (for Algolia auto-sync)
+SUPABASE_WEBHOOK_SECRET1=your-webhook-secret
+SUPABASE_WEBHOOK_SECRET2=your-webhook-secret
+SUPABASE_WEBHOOK_SECRET3=your-webhook-secret
 ```
-
-Refer to [.env.local.example](./.env.local.example) for all available variables.
 
 4. **Set up Supabase database:**
 
-```bash
-# Option A: Use the SQL migration files in /supabase directory
-# Import schema.sql into your Supabase database via SQL editor
+Import the schema into your Supabase project via the SQL Editor:
 
-# Option B: Run migrations via CLI (if configured)
-supabase db push
+```bash
+# The complete schema is located at:
+supabase/001_complete_schema.sql
 ```
 
-5. **Configure Google Drive API:**
+See [supabase/README.md](./supabase/README.md) for detailed database setup instructions.
 
-See [Google Drive Setup](./QUICK_START_GUIDE.md#google-drive-setup) for detailed 
-instructions on service account creation and folder sharing.
-
-6. **Run the development server:**
+5. **Run the development server:**
 
 ```bash
 pnpm dev
-# or: npm run dev / yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Environment Variables Reference
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | ✅ Yes | — |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | ✅ Yes | — |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role for server-side operations | ✅ Yes | — |
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | Google service account credentials | ✅ Yes | — |
-| `GOOGLE_DRIVE_FOLDER_ID` | Google Drive folder ID for PDFs | ✅ Yes | — |
-| `MAX_PDF_UPLOAD_SIZE_MB` | Max upload size in MB | ❌ No | `25` |
-| `ADMIN_SECRET_KEY` | Secret key for admin operations | ✅ Yes | — |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | ✅ |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key (public) | ✅ |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key for server-side operations | ✅ |
+| `GOOGLE_CLIENT_ID` | Google OAuth2 client ID | ✅ |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret | ✅ |
+| `GOOGLE_REDIRECT_URI` | OAuth2 redirect URI | ✅ |
+| `GOOGLE_REFRESH_TOKEN` | Google OAuth2 refresh token | ✅ |
+| `GOOGLE_DRIVE_FOLDER_ID` | Target Google Drive folder for uploads | ✅ |
+| `NEXT_PUBLIC_APP_URL` | Application base URL | ✅ |
+| `MAX_PDF_UPLOAD_SIZE_MB` | Maximum PDF upload size in MB | ❌ (default: `50`) |
+| `NEXT_PUBLIC_ALGOLIA_APP_ID` | Algolia application ID | ✅ |
+| `NEXT_PUBLIC_ALGOLIA_SEARCH_KEY` | Algolia search-only API key | ✅ |
+| `ALGOLIA_ADMIN_KEY` | Algolia admin API key (for indexing) | ✅ |
+| `SUPABASE_WEBHOOK_SECRET1/2/3` | Webhook secrets for Algolia auto-sync | ✅ |
 
 ---
 
@@ -207,59 +227,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 **Browse Documents:**
 
-1. Navigate to [http://localhost:3000/courses](http://localhost:3000/courses)
-2. Select a course → semester → subject
-3. View available documents
-4. Click to view or download PDFs
+1. Visit [ustm-academia.vercel.app](https://ustm-academia.vercel.app)
+2. Browse courses from the homepage or navigate to **Courses**
+3. Select a course → semester → subject
+4. View PDFs in-browser or download them
 
 **Search Documents:**
 
-```
-Navigate to /search and enter keywords:
-- Course name: "Computer Science"
-- Exam type: "End Semester"
-- Subject: "Data Structures"
-Results are filtered in real-time.
-```
+1. Click the **Search** icon in the header or navigate to `/search`
+2. Type keywords (subject name, course, paper type, etc.)
+3. Use faceted filters: Department, Course, Type, Exam, Year
+4. Click any result card to view the document
 
 ### For Administrators (Dashboard)
 
-**Access Admin Panel:**
-
-```bash
-1. Navigate to http://localhost:3000/admin/login
-2. Enter your admin credentials
-3. Access dashboard at http://localhost:3000/admin/dashboard
-```
-
-**Upload Documents:**
-
-```bash
-POST /api/admin/upload
-Content-Type: multipart/form-data
-
-{
-  "file": <PDF file>,
-  "course_id": "uuid",
-  "semester_id": "uuid",
-  "subject_id": "uuid",
-  "document_type_id": "uuid",
-  "exam_type_id": "uuid"
-}
-```
-
-**Create Course:**
-
-```bash
-POST /api/admin/courses
-Content-Type: application/json
-
-{
-  "name": "Computer Science",
-  "code": "CS",
-  "department_id": "uuid"
-}
-```
+1. Navigate to `/admin/login` and sign in with admin credentials
+2. Access the dashboard at `/admin/dashboard`
+3. Manage the academic hierarchy:
+   - **Departments** → Courses → Semesters → Subjects
+4. Upload documents:
+   - **Single upload:** `/admin/documents/upload`
+   - **Bulk upload:** `/admin/documents/bulk-upload` (multiple PDFs at once)
+5. Documents are automatically synced to Algolia search via Supabase webhooks
 
 ---
 
@@ -267,58 +256,87 @@ Content-Type: application/json
 
 ```
 ustm-academia/
-├── public/                          # Static assets
+├── public/                              # Static assets
+│   ├── icons/                           # PWA icons (192x192, 512x512)
+│   ├── manifest.json                    # PWA manifest
+│   ├── sw.js                            # Service worker
+│   ├── offline.html                     # Offline fallback page
+│   ├── robots.txt                       # SEO robots
+│   └── ustm-logo.png                    # USTM logo
 ├── src/
-│   ├── app/                         # Next.js App Router
-│   │   ├── api/                     # API routes
-│   │   │   ├── admin/               # Admin endpoints
-│   │   │   │   ├── courses/
-│   │   │   │   ├── documents/
-│   │   │   │   ├── upload/
-│   │   │   │   └── ...
-│   │   │   ├── search/              # Search endpoint
-│   │   │   └── courses/             # Public endpoints
-│   │   ├── admin/                   # Admin pages
-│   │   │   ├── (dashboard)/
-│   │   │   │   ├── dashboard/
-│   │   │   │   ├── courses/
-│   │   │   │   ├── documents/
-│   │   │   │   └── ...
-│   │   │   └── login/               # Admin login
-│   │   ├── courses/                 # Public student pages
-│   │   │   └── [slug]/              # Course detail
-│   │   ├── search/                  # Search page
-│   │   └── layout.tsx               # Root layout
-│   ├── components/                  # React components
-│   │   ├── admin/                   # Admin-specific components
-│   │   │   ├── sidebar.tsx
-│   │   │   └── breadcrumb.tsx
-│   │   ├── public/                  # Public-facing components
-│   │   └── ui/                      # Shared UI components
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── input.tsx
-│   │       └── ...
-│   ├── lib/                         # Utility functions
+│   ├── app/                             # Next.js App Router
+│   │   ├── api/                         # API routes
+│   │   │   ├── admin/                   # Protected admin endpoints
+│   │   │   │   ├── bulk-upload/         # Bulk PDF upload
+│   │   │   │   ├── courses/             # Course CRUD
+│   │   │   │   ├── departments/         # Department CRUD
+│   │   │   │   ├── documents/           # Document CRUD + replace
+│   │   │   │   ├── semesters/           # Semester CRUD
+│   │   │   │   ├── subjects/            # Subject CRUD
+│   │   │   │   └── upload/              # Single PDF upload
+│   │   │   ├── search/                  # Public search (rate-limited)
+│   │   │   ├── courses/                 # Public course data
+│   │   │   └── webhooks/algolia/        # Algolia auto-sync webhook
+│   │   ├── admin/                       # Admin pages
+│   │   │   ├── (dashboard)/             # Dashboard layout group
+│   │   │   │   ├── dashboard/           # Admin overview
+│   │   │   │   ├── courses/             # Course management
+│   │   │   │   ├── departments/         # Department management
+│   │   │   │   ├── documents/           # Document management + bulk upload
+│   │   │   │   ├── semesters/           # Semester management
+│   │   │   │   ├── subjects/            # Subject management
+│   │   │   │   └── settings/            # Admin settings
+│   │   │   └── login/                   # Admin login page
+│   │   ├── courses/                     # Public course browsing
+│   │   │   └── [slug]/                  # Course → Semester → Subject hierarchy
+│   │   │       └── [semester]/
+│   │   │           └── [subject]/
+│   │   ├── search/                      # Algolia-powered search page
+│   │   ├── view/[id]/                   # Document PDF viewer
+│   │   ├── about/                       # About page
+│   │   ├── help/                        # Help page
+│   │   ├── sitemap.xml/                 # Dynamic sitemap generation
+│   │   ├── globals.css                  # Global styles & animations
+│   │   └── layout.tsx                   # Root layout
+│   ├── components/                      # React components
+│   │   ├── Search/                      # Algolia search components
+│   │   │   └── GlobalSearch.tsx         # InstantSearch + HitCards + Filters
+│   │   ├── admin/                       # Admin-specific components
+│   │   │   ├── sidebar.tsx              # Dashboard sidebar
+│   │   │   └── breadcrumb.tsx           # Admin breadcrumbs
+│   │   ├── public/                      # Public-facing components
+│   │   │   └── layout.tsx               # PublicHeader + PublicFooter
+│   │   ├── ui/                          # shadcn/ui components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   └── ...
+│   │   └── ServiceWorkerRegister.tsx    # PWA service worker registration
+│   ├── lib/                             # Utility functions
 │   │   ├── supabase/
-│   │   │   ├── client.ts            # Browser client
-│   │   │   ├── server.ts            # Server client
-│   │   │   └── middleware.ts        # Auth middleware
-│   │   ├── google-drive.ts          # Drive API wrapper
-│   │   ├── utils.ts                 # Helper functions
-│   │   └── validations.ts           # Zod schemas
-│   ├── types/                       # TypeScript types
-│   │   └── index.ts
-│   └── middleware.ts                # Request middleware
-├── supabase/                        # Database migrations
-│   ├── schema.sql
-│   └── ...
-├── .env.local                       # Environment variables (git-ignored)
-├── .env.local.example               # Example env file
+│   │   │   ├── client.ts                # Browser Supabase client
+│   │   │   ├── server.ts                # Server Supabase client
+│   │   │   └── middleware.ts            # Auth middleware
+│   │   ├── google-drive.ts              # Google Drive API wrapper
+│   │   ├── rate-limit.ts                # API rate limiting
+│   │   ├── validations.ts               # Zod schemas for forms
+│   │   └── utils.ts                     # Helper functions (cn, etc.)
+│   ├── types/
+│   │   └── index.ts                     # TypeScript type definitions
+│   └── middleware.ts                    # Next.js request middleware (admin protection)
+├── supabase/
+│   ├── 001_complete_schema.sql          # Full database schema
+│   └── README.md                        # Database setup guide
+├── scripts/
+│   └── sync-algolia.mjs                 # Manual Algolia full re-sync script
+├── docs/
+│   ├── android-build-guide.md           # Android APK build guide
+│   └── pwa-apk-checklist.md             # PWA-to-APK checklist
 ├── package.json
-├── tsconfig.json
 ├── tailwind.config.ts
-└── next.config.mjs
+├── next.config.mjs
+├── tsconfig.json
+└── postcss.config.mjs
 ```
 
 ---
@@ -327,118 +345,125 @@ ustm-academia/
 
 ### Public Endpoints
 
-#### Get All Courses
+#### Search Documents
 
-```bash
+```
+GET /api/search?q={query}&page={0}&limit={20}
+```
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `q` | string | Search query (max 200 chars) | `""` |
+| `page` | number | Page number (0-indexed) | `0` |
+| `limit` | number | Results per page (max 100) | `20` |
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "title": "Data Structures - End Semester 2024",
+      "year": 2024,
+      "file_url": "https://drive.google.com/...",
+      "is_downloadable": true,
+      "course": { "id": "uuid", "short_name": "B.Tech CSE", "slug": "btech-cse" },
+      "semester": { "id": "uuid", "label": "Semester 4", "semester_number": 4 },
+      "subject": { "id": "uuid", "name": "Data Structures", "slug": "data-structures" },
+      "document_type": { "id": "uuid", "name": "Question Paper", "slug": "question-paper" },
+      "exam_type": { "id": "uuid", "name": "End Semester", "slug": "end-semester" }
+    }
+  ],
+  "total": 42,
+  "page": 0,
+  "limit": 20,
+  "pages": 3,
+  "hasNextPage": true,
+  "hasPreviousPage": false,
+  "query": "data structures"
+}
+```
+
+**Rate Limit:** Search requests are rate-limited per client IP.
+
+#### Get Courses
+
+```
 GET /api/courses
 ```
 
-**Response:**
-```json
-[
-  {
-    "id": "uuid",
-    "name": "Computer Science",
-    "code": "CS",
-    "department": "Engineering"
-  }
-]
+### Admin Endpoints (Protected)
+
+All admin endpoints require Supabase session authentication via cookies.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/admin/departments` | GET, POST | List/create departments |
+| `/api/admin/courses` | GET, POST | List/create courses |
+| `/api/admin/semesters` | GET, POST | List/create semesters |
+| `/api/admin/subjects` | GET, POST | List/create subjects |
+| `/api/admin/documents` | GET, POST, DELETE | List/create/delete documents |
+| `/api/admin/documents/replace` | POST | Replace existing document PDF |
+| `/api/admin/upload` | POST | Upload single PDF to Google Drive |
+| `/api/admin/bulk-upload` | POST | Upload multiple PDFs to Google Drive |
+
+#### Algolia Webhook (Auto-sync)
+
+```
+POST /api/webhooks/algolia
+Authorization: Bearer <webhook_secret>
 ```
 
-#### Search Documents
+Triggered by Supabase database webhooks when documents, subjects, or courses are created/updated/deleted. Automatically keeps the Algolia search index in sync.
 
-```bash
-GET /api/search?q=data&course_id=uuid&exam_type=mid-term
-```
+---
 
-**Response:**
-```json
-{
-  "results": [
-    {
-      "id": "uuid",
-      "title": "Data Structures - Mid Term",
-      "subject": "Data Structures",
-      "semester": 3,
-      "file_url": "https://..."
-    }
-  ],
-  "total": 42
-}
-```
+## 📱 PWA Support
 
-### Admin Endpoints
+USTM Academia is a Progressive Web App (PWA) and can be installed on mobile devices:
 
-#### Create Course
+- **Service Worker:** Caches static assets for offline access
+- **Offline Page:** Shows a branded offline fallback when network is unavailable
+- **Installable:** "Add to Home Screen" prompt on supported browsers
+- **App Manifest:** Custom icons, splash screen, standalone display mode
 
-```bash
-POST /api/admin/courses
-Authorization: Bearer <admin_token>
-Content-Type: application/json
-
-{
-  "name": "Computer Science",
-  "code": "CS",
-  "department_id": "uuid"
-}
-```
-
-#### Upload Document
-
-```bash
-POST /api/admin/upload
-Authorization: Bearer <admin_token>
-Content-Type: multipart/form-data
-
-Multipart fields:
-- file: <PDF file>
-- course_id: "uuid"
-- semester_id: "uuid"
-- subject_id: "uuid"
-- document_type_id: "uuid"
-- exam_type_id: "uuid"
-```
-
-#### Delete Document
-
-```bash
-DELETE /api/admin/documents/:id
-Authorization: Bearer <admin_token>
-```
+For building an Android APK from the PWA, see:
+- [Android Build Guide](./docs/android-build-guide.md)
+- [PWA-to-APK Checklist](./docs/pwa-apk-checklist.md)
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] Project setup and initial configuration
-- [x] Database schema and migrations
-- [x] Supabase authentication
-- [x] Admin dashboard and CRUD operations
-- [x] PDF upload and storage
-- [x] Public student portal
-- [x] Search and filtering
-- [x] Performance optimization
+- [x] Next.js App Router setup with TypeScript
+- [x] Supabase database schema and migrations
+- [x] Supabase authentication for admins
+- [x] Admin dashboard with full CRUD operations
+- [x] Single and bulk PDF upload via Google Drive
+- [x] Public student portal with course browsing
+- [x] Algolia-powered instant search with faceted filters
+- [x] ISR caching and performance optimization
+- [x] PWA with service worker and offline support
+- [x] SEO optimization (sitemap, Open Graph, meta tags)
+- [x] Loading skeletons and smooth animations
+- [x] Rate limiting on search API
 - [ ] Email notifications for new uploads
 - [ ] Advanced analytics dashboard
-- [ ] Mobile app (React Native)
-- [ ] Offline document access
 - [ ] Dark mode support
-- [ ] Multi-language support
-- [ ] AI-powered study recommendations
+- [ ] Multi-language support (Hindi, Khasi)
+- [ ] Notes and study material uploads by students
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions from developers and USTM community members!
+Contributions from developers and the USTM community are welcome!
 
-### Getting Started
-
-1. **Fork the repository** on GitHub
-2. **Clone your fork:**
+1. **Fork** the repository on GitHub
+2. **Clone** your fork:
    ```bash
-   git clone https://github.com/yourusername/ustm-academia.git
-   cd ustm-academia
+   git clone https://github.com/your-username/USTM_academia.git
+   cd USTM_academia
    ```
 3. **Create a feature branch:**
    ```bash
@@ -448,54 +473,31 @@ We welcome contributions from developers and USTM community members!
    ```bash
    git commit -m "feat: add feature description"
    ```
-5. **Push to your fork:**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-6. **Open a Pull Request** with a clear description
+5. **Push** and **open a Pull Request** with a clear description
 
-### Contribution Guidelines
+### Guidelines
 
-- Follow the [Code of Conduct](./CODE_OF_CONDUCT.md)
-- Ensure all tests pass before submitting PR
-- Update documentation for new features
-- Add unit tests for new functionality
 - Follow TypeScript and Tailwind CSS best practices
+- Ensure `pnpm build` passes without errors before submitting
+- Update documentation for new features
 - Reference related issues in PR descriptions
-
-For detailed guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see [LICENSE](./LICENSE) file for details.
-
-This means you're free to use, modify, and distribute this project for commercial and 
-non-commercial purposes, provided you include the original copyright notice.
 
 ---
 
 ## 🙏 Acknowledgements
 
 - **University of Science and Technology Meghalaya (USTM)** — for the vision and support
-- **Next.js Team** — for the exceptional React framework
-- **Supabase** — for the amazing PostgreSQL backend-as-a-service
-- **Radix UI** — for accessible, unstyled UI components
-- **Tailwind Labs** — for the utility-first CSS framework
-- **Google Cloud** — for reliable file storage via Google Drive API
+- **[Next.js](https://nextjs.org)** — React framework for production
+- **[Supabase](https://supabase.com)** — PostgreSQL backend-as-a-service
+- **[Algolia](https://algolia.com)** — Real-time search engine
+- **[Radix UI](https://radix-ui.com)** — Accessible UI primitives
+- **[Tailwind CSS](https://tailwindcss.com)** — Utility-first CSS framework
+- **[Google Drive API](https://developers.google.com/drive)** — Scalable file storage
+- **[Vercel](https://vercel.com)** — Edge-optimized hosting platform
 
-### Contributors
+### Built By
 
-- **Lead Developer:** Bakhtiyar Khan
-- **Design:** Design team at USTM
-
-### Resources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Docs](https://supabase.com/docs)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs)
-- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+- **Bakhtiar Abid Laskar** — Lead Developer — [@Bakhtiar-Abid-Laskar](https://github.com/Bakhtiar-Abid-Laskar)
 
 ---
 
@@ -503,6 +505,6 @@ non-commercial purposes, provided you include the original copyright notice.
 
 **Made with ❤️ for USTM students**
 
-Have questions? Open an issue or reach out to the development team.
+[Live Site](https://ustm-academia.vercel.app) · [Report Bug](https://github.com/Bakhtiar-Abid-Laskar/USTM_academia/issues) · [Request Feature](https://github.com/Bakhtiar-Abid-Laskar/USTM_academia/issues)
 
 </div>
