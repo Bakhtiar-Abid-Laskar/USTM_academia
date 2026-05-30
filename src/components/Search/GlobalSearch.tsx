@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import algoliasearch from 'algoliasearch/lite';
 import { 
@@ -11,12 +11,40 @@ import {
   useSearchBox,
   useRefinementList
 } from 'react-instantsearch';
-import { FileText, Search, X, ChevronDown, Check, BookOpen, Clock, Building2, GraduationCap } from 'lucide-react';
+import { FileText, Search, X, ChevronDown, Check, BookOpen, Clock, Building2, GraduationCap, AlertTriangle } from 'lucide-react';
 
-const searchClient = algoliasearch(
-  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID || 'APP_ID',
-  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY || 'SEARCH_KEY'
+// Create the Algolia client ONCE at module level — never inside a component.
+// The `as any` cast bridges algoliasearch v4's type with react-instantsearch v7's expected type.
+const algoliaClient = algoliasearch(
+  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID || '',
+  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY || ''
 );
+
+// Wrap the client to avoid firing a search on empty query (initial mount).
+// This prevents the flood of requests and unnecessary network calls when the page loads.
+const searchClient = {
+  ...algoliaClient,
+  search(requests: any[]) {
+    // If every request has an empty query, skip the network call entirely
+    if (requests.every(({ params }: any) => !params?.query || params.query.trim() === '')) {
+      return Promise.resolve({
+        results: requests.map(() => ({
+          hits: [],
+          nbHits: 0,
+          nbPages: 0,
+          page: 0,
+          processingTimeMS: 0,
+          hitsPerPage: 20,
+          exhaustiveNbHits: true,
+          query: '',
+          params: '',
+          facets: {},
+        })),
+      });
+    }
+    return algoliaClient.search(requests);
+  },
+};
 
 type AlgoliaDocumentHit = {
   objectID: string;
@@ -35,6 +63,7 @@ type AlgoliaDocumentHit = {
 // 1. Custom Interactive SearchBox with popular chips
 function CustomSearchBox() {
   const { query, refine, clear } = useSearchBox();
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const popularSearches = [
     "B.Tech CSE", 
@@ -42,6 +71,11 @@ function CustomSearchBox() {
     "Semester 4", 
     "Syllabus"
   ];
+
+  // Focus the input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   return (
     <div className="w-full -mt-24 z-20 relative max-w-4xl mx-auto px-4">
@@ -57,6 +91,7 @@ function CustomSearchBox() {
        <div className="relative mb-6 group">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-500 w-6 h-6 transition-transform group-focus-within:scale-110" />
           <input 
+            ref={inputRef}
             type="search"
             value={query}
             onChange={(e) => refine(e.target.value)}
@@ -93,13 +128,24 @@ function CustomSearchBox() {
 function FilterDropdown({ attribute, label }: { attribute: string, label: string }) {
   const { items, refine } = useRefinementList({ attribute, limit: 10 });
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen]);
 
   if (items.length === 0) return null;
 
   const activeCount = items.filter(i => i.isRefined).length;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-4 py-2 bg-white border rounded-lg text-sm font-medium transition-colors shadow-sm ${activeCount > 0 ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'}`}
@@ -197,9 +243,28 @@ const HitCard = ({ hit }: { hit: AlgoliaDocumentHit }) => {
   );
 };
 
-// 4. Results Wrapper (Loading & Empty States)
+// 4. Results Wrapper (Loading, Empty, & Error States)
 function ResultsWrapper({ children }: { children: React.ReactNode }) {
-  const { status, results } = useInstantSearch();
+  const { status, results, error } = useInstantSearch();
+
+  // Error State — Algolia connection failed
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-red-200 shadow-sm">
+        <div className="bg-red-50 p-6 rounded-full mb-6">
+          <AlertTriangle className="w-12 h-12 text-red-400" />
+        </div>
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">Search temporarily unavailable</h3>
+        <p className="text-slate-500 mb-8 max-w-md">We&apos;re having trouble connecting to our search service. Please try again in a moment.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-6 py-2.5 bg-white text-slate-700 border border-slate-300 rounded-xl font-medium hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
   
   // Loading State (Skeleton)
   if (status === 'loading' || status === 'stalled') {
@@ -218,6 +283,19 @@ function ResultsWrapper({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  // Initial state — no query yet
+  if (!results?.query || results.query.trim() === '') {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-200 border-dashed shadow-sm">
+        <div className="bg-slate-50 p-6 rounded-full mb-6">
+          <Search className="w-12 h-12 text-slate-300" />
+        </div>
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">Start searching</h3>
+        <p className="text-slate-500 max-w-md">Type a subject name, course, semester, or keyword above to find study materials.</p>
       </div>
     );
   }
@@ -269,7 +347,12 @@ export default function GlobalSearch() {
         </div>
       </div>
 
-      <InstantSearch searchClient={searchClient as any} indexName="documents_index">
+      <InstantSearch 
+        searchClient={searchClient as any} 
+        indexName="documents_index"
+        stalledSearchDelay={500}
+        future={{ preserveSharedStateOnUnmount: true }}
+      >
         <CustomSearchBox />
         
         <div className="w-full max-w-7xl mx-auto px-4 mt-12">
