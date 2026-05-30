@@ -78,10 +78,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Use Full-Text Search RPC function
-    const { data: searchResults, error: rpcError } = await supabase.rpc(
+    // ✅ PERF FIX #3: Optimize query to fetch only paginated results
+    // Use Full-Text Search RPC function with proper pagination
+    const { data: searchResults, error: rpcError, count: totalCount } = await supabase.rpc(
       "search_documents",
-      { search_query: q }
+      { search_query: q },
+      { count: "exact" }
     );
 
     if (rpcError) {
@@ -103,25 +105,26 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get total count and paginated results
-    const { data, error: queryError, count } = await supabase
+    // Get only the paginated subset of IDs and fetch full details
+    const paginatedIds = docIds.slice(offset, offset + limit);
+    const { data, error: queryError } = await supabase
       .from("documents")
-      .select(selectColumns, { count: "exact" })
-      .in("id", docIds)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .select(selectColumns)
+      .in("id", paginatedIds)
+      .order("created_at", { ascending: false });
 
     if (queryError) {
       return NextResponse.json({ error: queryError.message }, { status: 500 });
     }
 
+    const totalResults = totalCount || docIds.length;
     return NextResponse.json({
       data: data || [],
-      total: count || 0,
+      total: totalResults,
       page,
       limit,
-      pages: Math.ceil((count || 0) / limit),
-      hasNextPage: offset + limit < (count || 0),
+      pages: Math.ceil(totalResults / limit),
+      hasNextPage: offset + limit < totalResults,
       hasPreviousPage: page > 0,
       query: q,
     });

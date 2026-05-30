@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +19,45 @@ interface SearchResponse {
   hasPreviousPage: boolean;
   query?: string;
 }
+
+// ✅ PERF FIX #1: Memoized result card to prevent unnecessary re-renders
+const SearchResultCard = memo(function SearchResultCard({ doc }: { doc: any }) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-text-main text-sm sm:text-base">{doc.title}</h3>
+            <div className="flex flex-wrap items-center gap-1 mt-1 text-xs text-text-muted">
+              <span>{doc.course?.short_name}</span>
+              <span>•</span>
+              <span>{doc.semester?.label}</span>
+              <span>•</span>
+              <span>{doc.subject?.name}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <Badge variant={doc.document_type?.slug === "syllabus" ? "default" : "outline"}>
+                {doc.document_type?.name}
+              </Badge>
+              {doc.exam_type && <Badge variant="outline">{doc.exam_type.name}</Badge>}
+              {doc.year && <Badge variant="outline">{doc.year}</Badge>}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link href={`/view/${doc.id}`}>
+              <Button size="sm"><Eye className="h-3.5 w-3.5 mr-1.5" />View</Button>
+            </Link>
+            {doc.is_downloadable && (
+              <a href={doc.file_url} download target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm"><Download className="h-3.5 w-3.5 mr-1.5" />Download</Button>
+              </a>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
 
 export default function SearchContent() {
   const router = useRouter();
@@ -202,43 +241,10 @@ export default function SearchContent() {
             </p>
           </div>
           
-          <div className="space-y-3">
-            {results.map((doc: any, index: number) => (
-              <div key={doc.id} className="will-animate animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-text-main text-sm sm:text-base">{doc.title}</h3>
-                        <div className="flex flex-wrap items-center gap-1 mt-1 text-xs text-text-muted">
-                          <span>{doc.course?.short_name}</span>
-                          <span>•</span>
-                          <span>{doc.semester?.label}</span>
-                          <span>•</span>
-                          <span>{doc.subject?.name}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <Badge variant={doc.document_type?.slug === "syllabus" ? "default" : "outline"}>
-                            {doc.document_type?.name}
-                          </Badge>
-                          {doc.exam_type && <Badge variant="outline">{doc.exam_type.name}</Badge>}
-                          {doc.year && <Badge variant="outline">{doc.year}</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Link href={`/view/${doc.id}`}>
-                          <Button size="sm"><Eye className="h-3.5 w-3.5 mr-1.5" />View</Button>
-                        </Link>
-                        {doc.is_downloadable && (
-                          <a href={doc.file_url} download target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" size="sm"><Download className="h-3.5 w-3.5 mr-1.5" />Download</Button>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+          {/* ✅ PERF FIX #2: Removed staggered animations that cause UI freezing */}
+          <div className="space-y-3 animate-fade-in">
+            {results.map((doc: any) => (
+              <SearchResultCard key={doc.id} doc={doc} />
             ))}
           </div>
 
