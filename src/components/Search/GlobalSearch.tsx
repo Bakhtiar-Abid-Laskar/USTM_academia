@@ -265,9 +265,26 @@ function ResultsWrapper({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  
-  // Loading State (Skeleton)
-  if (status === 'loading' || status === 'stalled') {
+
+  const hasQuery = results?.query && results.query.trim() !== '';
+  const isSearching = status === 'loading' || status === 'stalled';
+  const hasHits = results && results.hits && results.hits.length > 0;
+
+  // Initial state — no query yet
+  if (!hasQuery) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-200 border-dashed shadow-sm">
+        <div className="bg-slate-50 p-6 rounded-full mb-6">
+          <Search className="w-12 h-12 text-slate-300" />
+        </div>
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">Start searching</h3>
+        <p className="text-slate-500 max-w-md">Type a subject name, course, semester, or keyword above to find study materials.</p>
+      </div>
+    );
+  }
+
+  // Loading State (Skeleton) — Only on initial search before hits arrive
+  if (isSearching && !hasHits) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
@@ -287,21 +304,8 @@ function ResultsWrapper({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Initial state — no query yet
-  if (!results?.query || results.query.trim() === '') {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-200 border-dashed shadow-sm">
-        <div className="bg-slate-50 p-6 rounded-full mb-6">
-          <Search className="w-12 h-12 text-slate-300" />
-        </div>
-        <h3 className="text-2xl font-bold text-slate-800 mb-2">Start searching</h3>
-        <p className="text-slate-500 max-w-md">Type a subject name, course, semester, or keyword above to find study materials.</p>
-      </div>
-    );
-  }
-
   // Empty State
-  if (results && results.nbHits === 0) {
+  if (!hasHits && !isSearching) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-200 border-dashed shadow-sm">
         <div className="bg-slate-50 p-6 rounded-full mb-6">
@@ -320,12 +324,12 @@ function ResultsWrapper({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
+    <div className={`transition-opacity duration-200 ${isSearching ? 'opacity-60 pointer-events-none' : ''}`}>
       <div className="mb-6 flex justify-between items-center text-sm font-medium text-slate-500 px-1">
         <span>Showing {results?.nbHits || 0} results</span>
       </div>
       {children}
-    </>
+    </div>
   );
 }
 
