@@ -33,7 +33,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  // Admin routes: construct request headers containing "x-is-admin" = "true"
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-is-admin", "true");
+
+  let response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 
   // ✅ FAST PATH: If there are no Supabase auth cookies at all, the user has no
   // session. Skip creating a Supabase client and the expensive getUser() network
@@ -60,12 +68,20 @@ export async function updateSession(request: NextRequest) {
         },
         set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
+          response = NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
+          });
           response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
           request.cookies.set({ name, value: "", ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
+          response = NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
+          });
           response.cookies.set({ name, value: "", ...options });
         },
       },
