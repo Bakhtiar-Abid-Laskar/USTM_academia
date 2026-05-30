@@ -38,19 +38,43 @@ export async function updateSession(request: NextRequest) {
   // ✅ FIX: Gracefully handle auth errors (missing/expired refresh token)
   let user = null;
   try {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    user = authUser;
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      // Log auth errors but don't crash middleware
+      // This can happen when refresh token doesn't exist
+      if (authError.status === 400 || authError.message?.includes("refresh_token")) {
+        // Expected behavior - session expired or invalid
+        console.debug("Session invalid - user will be redirected to login:", {
+          status: authError.status,
+          code: authError.message,
+          path: request.nextUrl.pathname,
+        });
+      } else {
+        // Unexpected error
+        console.warn("Auth check failed in middleware:", {
+          status: authError.status,
+          message: authError.message,
+          path: request.nextUrl.pathname,
+        });
+      }
+    } else {
+      user = authUser;
+    }
   } catch (error: any) {
-    // Log auth errors but don't crash middleware
-    // This can happen when:
-    // 1. Refresh token is expired/missing
-    // 2. User's session is invalid
-    // 3. Supabase credentials are invalid
-    console.warn("Auth check failed in middleware:", {
-      code: error?.code,
-      message: error?.message,
-      path: request.nextUrl.pathname,
-    });
+    // Handle Supabase AuthApiError and other exceptions
+    if (error?.code === "refresh_token_not_found" || error?.__isAuthError) {
+      console.debug("Session expired in middleware:", {
+        code: error?.code,
+        path: request.nextUrl.pathname,
+      });
+    } else {
+      console.warn("Unexpected error in middleware auth check:", {
+        code: error?.code,
+        message: error?.message,
+        path: request.nextUrl.pathname,
+      });
+    }
     // Continue with user = null, which will trigger re-authentication
   }
 

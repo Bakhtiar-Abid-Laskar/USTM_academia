@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { safeGetUser } from "@/lib/supabase/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET — list semesters for a course, with document counts (single query, no N+1)
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
 // PUT — update a semester (title only)
 export async function PUT(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await safeGetUser(supabase);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();

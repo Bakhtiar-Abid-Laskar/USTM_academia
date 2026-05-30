@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { safeGetUser } from "@/lib/supabase/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { documentUpdateSchema } from "@/lib/validations";
 import { deleteFileFromGoogleDrive } from "@/lib/google-drive";
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
 // PUT — update document metadata
 export async function PUT(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await safeGetUser(supabase);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -110,7 +111,7 @@ export async function PUT(request: NextRequest) {
 // DELETE — delete a document
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await safeGetUser(supabase);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);

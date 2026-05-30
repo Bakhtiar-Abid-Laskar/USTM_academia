@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { safeGetUser } from "@/lib/supabase/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { slugifyFileName, zeroPad } from "@/lib/utils";
 import { bulkUploadItemSchema } from "@/lib/validations";
@@ -35,9 +36,7 @@ function sanitizeString(input: string): string {
 export async function POST(request: NextRequest) {
   // ─── 1. Auth Check ───
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await safeGetUser(supabase);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

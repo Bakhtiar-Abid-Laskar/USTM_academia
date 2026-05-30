@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { safeGetUser } from "@/lib/supabase/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { sanitizeFileName } from "@/lib/utils";
 import { 
@@ -15,7 +16,7 @@ const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await safeGetUser(supabase);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // ✅ FIX #1: Add rate limiting
