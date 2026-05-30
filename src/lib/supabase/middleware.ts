@@ -1,6 +1,20 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/**
+ * Clear all Supabase auth cookies from a response to prevent stale
+ * refresh tokens from being sent on subsequent requests.
+ */
+function clearSupabaseAuthCookies(request: NextRequest, res: NextResponse): NextResponse {
+  const cookieNames = request.cookies.getAll().map((c) => c.name);
+  for (const name of cookieNames) {
+    if (name.startsWith("sb-") && name.includes("auth-token")) {
+      res.cookies.set(name, "", { path: "/", maxAge: 0 });
+    }
+  }
+  return res;
+}
+
 export async function updateSession(request: NextRequest) {
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isApiAdminRoute = request.nextUrl.pathname.startsWith("/api/admin");
@@ -50,6 +64,8 @@ export async function updateSession(request: NextRequest) {
           code: authError.message,
           path: request.nextUrl.pathname,
         });
+        // Clear stale auth cookies so the next request doesn't re-send the dead token
+        clearSupabaseAuthCookies(request, response);
       } else {
         // Unexpected error
         console.warn("Auth check failed in middleware:", {
@@ -68,6 +84,8 @@ export async function updateSession(request: NextRequest) {
         code: error?.code,
         path: request.nextUrl.pathname,
       });
+      // Clear stale auth cookies so the next request doesn't re-send the dead token
+      clearSupabaseAuthCookies(request, response);
     } else {
       console.warn("Unexpected error in middleware auth check:", {
         code: error?.code,
@@ -92,6 +110,8 @@ export async function updateSession(request: NextRequest) {
       }
       response = NextResponse.redirect(new URL("/admin/login?expired=true", request.url));
       response.cookies.delete("admin_last_active");
+      // Clear auth cookies immediately so the next request doesn't trigger refresh_token_not_found
+      clearSupabaseAuthCookies(request, response);
       return response;
     }
 
