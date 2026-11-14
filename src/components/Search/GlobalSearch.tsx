@@ -3,11 +3,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FileText, Search, X, ChevronDown, Check,
-  BookOpen, Clock, Building2, GraduationCap,
-  SlidersHorizontal, Loader2, Sparkles, AlertCircle
+  Search, X, ChevronDown, Check,
+  BookOpen, GraduationCap,
+  SlidersHorizontal, Loader2, AlertCircle, ArrowUpRight
 } from 'lucide-react';
+import { cardHoverVariants } from '@/lib/motion';
 
 export interface DocumentItem {
   id: string;
@@ -282,89 +284,95 @@ export default function GlobalSearch() {
   );
 
   return (
-    <div className="w-full flex flex-col min-h-screen pb-20">
-      {/* ── Hero Section ────────────────────────────────────────────────────── */}
-      <div className="bg-[#0f172a] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pt-20 pb-36 px-4 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/50 to-[#0f172a] z-0" />
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-300 text-xs font-semibold mb-4 backdrop-blur-md">
-            <Sparkles size={14} className="text-blue-400" />
-            <span>Instant Academic Database Search</span>
+    <div className="w-full flex flex-col min-h-screen pb-24">
+      {/* ── Modern Academic Editorial Hero ─────────────────────────────────── */}
+      <section className="border-b border-border bg-surface relative overflow-hidden py-14 sm:py-20 academic-grain">
+        <div className="max-w-editorial mx-auto px-4 sm:px-8">
+          <div className="max-w-3xl">
+            {/* Academic Archive badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-subtle border border-border text-xs font-semibold text-ink-muted mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-gold" />
+              <span>USTM Central Archive Search</span>
+              <span className="text-ink-faint">·</span>
+              <span className="font-tabular text-ink font-bold">{totalCount} items indexed</span>
+            </div>
+
+            <h1 className="font-editorial-heading text-3xl sm:text-5xl lg:text-6xl font-normal text-ink tracking-tight mb-4">
+              Find Any Paper, <span className="italic font-editorial-serif text-accent-gold">Instantly.</span>
+            </h1>
+
+            <p className="text-sm sm:text-base text-ink-muted leading-relaxed max-w-2xl mb-8">
+              Search by subject title, course code, semester number, or year. Clean, direct access
+              to verified question papers and curricula without login barriers.
+            </p>
+
+            {/* ── Primary Search Box ────────────────────────────────────────── */}
+            <div className="relative mb-5 group">
+              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-ink-faint group-focus-within:text-accent-gold transition-colors">
+                <Search size={20} />
+              </div>
+
+              <input
+                ref={inputRef}
+                type="search"
+                value={query}
+                onChange={(e) => handleQueryChange(e.target.value)}
+                placeholder="Search 'B.Tech CSE', 'Operating System', 'Semester 4', '2025'..."
+                className="w-full p-4 sm:p-5 pl-13 sm:pl-14 pr-24 rounded-xl sm:rounded-2xl border border-border bg-paper shadow-fine focus:bg-surface focus:border-accent-gold focus:ring-4 focus:ring-accent-gold/10 outline-none text-base sm:text-lg text-ink placeholder:text-ink-faint transition-all [&::-webkit-search-cancel-button]:hidden"
+              />
+
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                {query && (
+                  <button
+                    onClick={() => handleQueryChange('')}
+                    aria-label="Clear search"
+                    className="p-1.5 text-ink-faint hover:text-ink hover:bg-surface-subtle rounded-lg transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+                <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-[10px] font-mono font-bold bg-surface border border-border text-ink-muted rounded shadow-fine">
+                  ESC
+                </kbd>
+              </div>
+            </div>
+
+            {/* ── Quick Search Chips ────────────────────────────────────────── */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-ink-faint font-medium mr-1 hidden sm:inline">Popular:</span>
+              {popularSearches.map((chip) => {
+                const isSelected = query.toLowerCase() === chip.toLowerCase();
+                return (
+                  <button
+                    key={chip}
+                    onClick={() => handleChipClick(chip)}
+                    className={`px-3 py-1.5 rounded-lg border font-medium transition-all ${
+                      isSelected
+                        ? 'bg-ink text-surface border-ink shadow-fine'
+                        : 'bg-surface hover:bg-surface-subtle text-ink-muted hover:text-ink border-border shadow-fine hover:-translate-y-0.5'
+                    }`}
+                  >
+                    {chip}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tight text-white drop-shadow-md">
-            Find Study Materials <span className="text-blue-400">Faster</span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-medium">
-            Search previous year question papers, syllabi, notes, and academic resources across USTM in seconds.
-          </p>
         </div>
-      </div>
+      </section>
 
-      {/* ── Search Bar & Popular Chips ────────────────────────────────────── */}
-      <div className="w-full -mt-24 z-20 relative max-w-4xl mx-auto px-4">
-        {/* Trust Badges */}
-        <div className="hidden md:flex flex-wrap justify-center gap-6 mb-6 text-sm font-medium text-blue-50/90 drop-shadow-sm">
-          <span className="flex items-center gap-2">
-            <FileText size={16} /> Previous Year Papers
-          </span>
-          <span className="flex items-center gap-2">
-            <BookOpen size={16} /> Syllabi
-          </span>
-          <span className="flex items-center gap-2">
-            <Clock size={16} /> Notes
-          </span>
-          <span className="flex items-center gap-2">
-            <Building2 size={16} /> Department Resources
-          </span>
-        </div>
+      {/* ── Main Catalog & Filter Ledger ──────────────────────────────────── */}
+      <main className="max-w-editorial mx-auto px-4 sm:px-8 mt-8 w-full">
+        {/* Filter Ledger Bar */}
+        <div className="flex flex-wrap items-center gap-2.5 pb-6 border-b border-border mb-8">
+          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ink-muted mr-2">
+            <SlidersHorizontal size={14} className="text-accent-gold" />
+            <span>Refine</span>
+          </div>
 
-        {/* Search Input Box */}
-        <div className="relative mb-5 group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-500 w-6 h-6 transition-transform group-focus-within:scale-110" />
-          <input
-            ref={inputRef}
-            type="search"
-            value={query}
-            onChange={(e) => handleQueryChange(e.target.value)}
-            placeholder="Search by subject, course, semester, year, or paper..."
-            className="w-full p-5 pl-16 pr-16 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-white border border-transparent focus:border-blue-100 focus:ring-4 focus:ring-blue-500/20 outline-none text-lg md:text-xl transition-all [&::-webkit-search-cancel-button]:hidden text-slate-800 placeholder-slate-400"
-          />
-          {query && (
-            <button
-              onClick={() => handleQueryChange('')}
-              aria-label="Clear search"
-              className="absolute right-6 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        {/* Quick-Search Chips */}
-        <div className="flex flex-wrap justify-center gap-2">
-          {popularSearches.map((chip) => (
-            <button
-              key={chip}
-              onClick={() => handleChipClick(chip)}
-              className="px-4 py-1.5 bg-white/90 hover:bg-white text-slate-800 border border-white/80 rounded-full text-xs md:text-sm font-semibold transition-all backdrop-blur-md shadow-sm hover:scale-105 hover:shadow-md"
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Main Content & Filters ────────────────────────────────────────── */}
-      <div className="w-full max-w-7xl mx-auto px-4 mt-10">
-        {/* Filter Bar */}
-        <div className="flex flex-wrap items-center gap-3 mb-8 pb-4 border-b border-slate-200">
-          <span className="text-sm font-bold text-slate-800 flex items-center gap-2 mr-1">
-            <SlidersHorizontal size={15} /> Filters
-          </span>
-
-          {/* Department Filter Dropdown */}
+          {/* Department Filter */}
           {filters.departments.length > 0 && (
-            <NativeDropdown
+            <EditorialDropdown
               label="Department"
               selectedValue={selectedDept}
               options={filters.departments}
@@ -372,9 +380,9 @@ export default function GlobalSearch() {
             />
           )}
 
-          {/* Course Filter Dropdown */}
+          {/* Course Filter */}
           {filters.courses.length > 0 && (
-            <NativeDropdown
+            <EditorialDropdown
               label="Course"
               selectedValue={selectedCourse}
               options={filters.courses}
@@ -382,9 +390,9 @@ export default function GlobalSearch() {
             />
           )}
 
-          {/* Document Type Dropdown */}
+          {/* Document Type Filter */}
           {filters.documentTypes.length > 0 && (
-            <NativeDropdown
+            <EditorialDropdown
               label="Type"
               selectedValue={selectedType}
               options={filters.documentTypes}
@@ -392,9 +400,9 @@ export default function GlobalSearch() {
             />
           )}
 
-          {/* Exam Type Dropdown */}
+          {/* Exam Type Filter */}
           {filters.examTypes.length > 0 && (
-            <NativeDropdown
+            <EditorialDropdown
               label="Exam"
               selectedValue={selectedExam}
               options={filters.examTypes}
@@ -402,9 +410,9 @@ export default function GlobalSearch() {
             />
           )}
 
-          {/* Year Dropdown */}
+          {/* Year Filter */}
           {filters.years.length > 0 && (
-            <NativeDropdown
+            <EditorialDropdown
               label="Year"
               selectedValue={selectedYear}
               options={filters.years}
@@ -415,230 +423,212 @@ export default function GlobalSearch() {
           {hasActiveFilters && (
             <button
               onClick={handleClearAll}
-              className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+              className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-accent-crimson hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-accent-crimson-bg transition-colors"
             >
               <X size={13} /> Clear all filters
             </button>
           )}
         </div>
 
-        {/* ── Search Status Header ───────────────────────────────────────── */}
-        <div className="mb-6 flex justify-between items-center text-sm font-medium text-slate-500 px-1">
-          <span>
-            Showing <strong className="text-slate-800">{totalCount}</strong> document
-            {totalCount !== 1 ? 's' : ''}
-            {query && <span> for &ldquo;{query}&rdquo;</span>}
-          </span>
+        {/* ── Status Header ───────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between mb-6 text-xs sm:text-sm font-medium text-ink-muted">
+          <div className="flex items-center gap-2">
+            <span className="font-tabular font-bold text-ink text-base">{totalCount}</span>
+            <span>papers found</span>
+            {query && (
+              <span className="text-ink font-serif italic text-sm">
+                for &ldquo;{query}&rdquo;
+              </span>
+            )}
+          </div>
+
           {loading && (
-            <span className="flex items-center gap-2 text-blue-600 animate-pulse text-xs font-semibold">
-              <Loader2 size={13} className="animate-spin" /> Searching...
+            <span className="flex items-center gap-2 text-accent-gold font-semibold text-xs animate-pulse">
+              <Loader2 size={13} className="animate-spin" /> Querying catalog...
             </span>
           )}
         </div>
 
         {/* ── Error Notification ─────────────────────────────────────────── */}
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 p-4 mb-6 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="rounded-xl bg-accent-crimson-bg border border-red-200 p-4 mb-6 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-accent-crimson flex-shrink-0" />
+            <p className="text-sm text-accent-crimson font-medium">{error}</p>
           </div>
         )}
 
-        {/* ── Loading Skeleton ───────────────────────────────────────────── */}
+        {/* ── Loading Skeleton State ──────────────────────────────────────── */}
         {loading && documents.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="animate-pulse bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-56 flex flex-col justify-between"
+                className="animate-pulse bg-surface p-6 rounded-xl border border-border h-52 flex flex-col justify-between shadow-fine"
               >
                 <div>
-                  <div className="h-6 bg-slate-200 rounded-md w-3/4 mb-5" />
-                  <div className="h-4 bg-slate-100 rounded-md w-1/2 mb-3" />
-                  <div className="h-4 bg-slate-100 rounded-md w-2/3" />
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="h-4 bg-surface-subtle rounded w-20" />
+                    <div className="h-5 bg-surface-subtle rounded w-12" />
+                  </div>
+                  <div className="h-5 bg-surface-subtle rounded w-3/4 mb-2.5" />
+                  <div className="h-3.5 bg-surface-subtle rounded w-1/2" />
                 </div>
-                <div className="flex gap-2 pt-4 border-t border-slate-50 mt-4">
-                  <div className="h-6 bg-slate-200 rounded-md w-24" />
-                  <div className="h-6 bg-slate-200 rounded-md w-16" />
+                <div className="pt-4 border-t border-border flex justify-between items-center">
+                  <div className="h-4 bg-surface-subtle rounded w-24" />
+                  <div className="h-4 bg-surface-subtle rounded w-16" />
                 </div>
               </div>
             ))}
           </div>
         ) : documents.length === 0 ? (
           /* ── Empty State ──────────────────────────────────────────────── */
-          <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-200 border-dashed shadow-sm">
-            <div className="bg-slate-50 p-6 rounded-full mb-6">
-              <Search className="w-12 h-12 text-slate-300" />
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-surface rounded-2xl border border-dashed border-border shadow-fine max-w-2xl mx-auto">
+            <div className="w-14 h-14 rounded-full bg-surface-subtle flex items-center justify-center mb-4 border border-border">
+              <BookOpen size={24} className="text-ink-faint" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-2">No study materials found</h3>
-            <p className="text-slate-500 mb-8 max-w-md">
-              Try searching with another keyword (e.g. &ldquo;B.Tech&rdquo;, &ldquo;Operating System&rdquo;,
-              &ldquo;Semester 4&rdquo;), or clear your active filters.
+            <h3 className="font-editorial-heading text-2xl font-normal text-ink mb-2">
+              No matching archive records
+            </h3>
+            <p className="text-sm text-ink-muted mb-6 max-w-md">
+              We couldn&apos;t find documents matching your criteria. Try loosening your filters or
+              searching by course name (e.g. &ldquo;B.Tech CSE&rdquo;).
             </p>
             <button
               onClick={handleClearAll}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-md"
+              className="px-5 py-2.5 bg-ink text-surface hover:bg-accent-navy text-xs font-semibold rounded-lg shadow-fine transition-all"
             >
               Reset Search & Filters
             </button>
           </div>
         ) : (
-          /* ── Result Cards Grid ────────────────────────────────────────── */
+          /* ── Document Cards Grid ──────────────────────────────────────── */
           <div className="space-y-8">
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-200 ${
-                loading ? 'opacity-60' : 'opacity-100'
+              className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 transition-opacity duration-200 ${
+                loading ? 'opacity-60 pointer-events-none' : 'opacity-100'
               }`}
             >
               {documents.map((doc) => (
-                <DocumentCard key={doc.id} doc={doc} />
+                <EditorialDocumentCard key={doc.id} doc={doc} />
               ))}
             </div>
 
             {/* ── Pagination ─────────────────────────────────────────────── */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-6">
+              <div className="flex items-center justify-between pt-8 border-t border-border">
                 <button
                   onClick={() => {
                     const prevP = Math.max(0, page - 1);
                     setPage(prevP);
-                    fetchResults(
-                      query,
-                      prevP,
-                      selectedCourse,
-                      selectedDept,
-                      selectedType,
-                      selectedExam,
-                      selectedYear
-                    );
-                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                    fetchResults(query, prevP, selectedCourse, selectedDept, selectedType, selectedExam, selectedYear);
+                    window.scrollTo({ top: 260, behavior: 'smooth' });
                   }}
                   disabled={page === 0 || loading}
-                  className="px-4 py-2 border rounded-xl text-sm font-semibold bg-white hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-sm text-slate-700"
+                  className="px-4 py-2 border border-border rounded-lg text-xs font-semibold bg-surface hover:bg-surface-subtle disabled:opacity-30 transition-colors text-ink shadow-fine"
                 >
-                  Previous
+                  ← Previous
                 </button>
-                <span className="text-sm font-medium text-slate-600 px-3">
-                  Page {page + 1} of {totalPages}
+
+                <span className="text-xs font-medium text-ink-muted font-tabular">
+                  Page <strong className="text-ink">{page + 1}</strong> of {totalPages}
                 </span>
+
                 <button
                   onClick={() => {
                     const nextP = page + 1;
                     if (nextP < totalPages) {
                       setPage(nextP);
-                      fetchResults(
-                        query,
-                        nextP,
-                        selectedCourse,
-                        selectedDept,
-                        selectedType,
-                        selectedExam,
-                        selectedYear
-                      );
-                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                      fetchResults(query, nextP, selectedCourse, selectedDept, selectedType, selectedExam, selectedYear);
+                      window.scrollTo({ top: 260, behavior: 'smooth' });
                     }
                   }}
                   disabled={page >= totalPages - 1 || loading}
-                  className="px-4 py-2 border rounded-xl text-sm font-semibold bg-white hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-sm text-slate-700"
+                  className="px-4 py-2 border border-border rounded-lg text-xs font-semibold bg-surface hover:bg-surface-subtle disabled:opacity-30 transition-colors text-ink shadow-fine"
                 >
-                  Next
+                  Next →
                 </button>
               </div>
             )}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
 
-// ─── Individual Document Card ────────────────────────────────────────────────
-const DocumentCard = React.memo(function DocumentCard({ doc }: { doc: DocumentItem }) {
+// ─── Editorial Document Card Component ───────────────────────────────────────
+const EditorialDocumentCard = React.memo(function EditorialDocumentCard({
+  doc,
+}: {
+  doc: DocumentItem;
+}) {
   const courseDisplay = doc.course?.short_name || doc.course?.name || '';
   const semDisplay = doc.semester?.label || (doc.semester?.semester_number ? `Sem ${doc.semester.semester_number}` : '');
 
   return (
-    <Link href={`/view/${doc.id}`} className="block h-full">
-      <article className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative overflow-hidden">
-        {/* Subtle hover background highlight */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity -mr-10 -mt-10 pointer-events-none" />
+    <motion.div
+      variants={cardHoverVariants}
+      initial="rest"
+      whileHover="hover"
+      whileTap="tap"
+      className="h-full"
+    >
+      <Link href={`/view/${doc.id}`} className="block h-full group">
+        <article className="bg-surface border border-border hover:border-accent-gold/60 rounded-xl p-5 sm:p-6 shadow-fine hover:shadow-editorial transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+          {/* Subtle paper top edge line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-gold/20 via-accent-gold/60 to-accent-gold/20 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-        {/* Top: Title & Year */}
-        <div className="flex justify-between items-start mb-4 gap-4 relative z-10">
-          <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-700 line-clamp-2 leading-snug transition-colors">
-            {doc.title}
-          </h3>
-          {doc.year && (
-            <span className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1.5 rounded-md font-bold whitespace-nowrap border border-slate-200 shadow-sm">
-              {doc.year}
+          {/* Top Metadata Header: Year & Doc Type */}
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-accent-gold font-sans">
+              {doc.document_type?.name || 'Document'}
             </span>
-          )}
-        </div>
-
-        {/* Middle: Details */}
-        <div className="text-sm text-slate-600 mb-6 flex-grow space-y-2.5 relative z-10">
-          {doc.subject?.name && (
-            <div className="flex items-start gap-2.5">
-              <BookOpen className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <span className="line-clamp-1 font-medium text-slate-700">
-                {doc.subject.name}
-                {doc.subject.subject_code && (
-                  <span className="text-slate-400 text-xs font-normal ml-1">
-                    ({doc.subject.subject_code})
-                  </span>
-                )}
-              </span>
-            </div>
-          )}
-
-          {courseDisplay && (
-            <div className="flex items-start gap-2.5">
-              <GraduationCap className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <span className="line-clamp-1 font-medium text-slate-700">
-                {courseDisplay}
-                {semDisplay && (
-                  <span className="text-blue-600 font-bold ml-1.5">· {semDisplay}</span>
-                )}
-              </span>
-            </div>
-          )}
-
-          {doc.department?.name && (
-            <div className="flex items-start gap-2.5">
-              <Building2 className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <span className="line-clamp-1 text-slate-500 text-xs">
-                {doc.department.name}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Bottom: Badges & Call to action */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 relative z-10 mt-auto">
-          <div className="flex flex-wrap gap-2">
-            {doc.document_type?.name && (
-              <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-md font-medium border border-blue-100">
-                <FileText size={12} /> {doc.document_type.name}
-              </span>
-            )}
-            {doc.exam_type?.name && (
-              <span className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md font-medium border border-indigo-100">
-                {doc.exam_type.name}
+            {doc.year && (
+              <span className="font-tabular text-xs font-bold px-2 py-0.5 rounded bg-surface-subtle border border-border text-ink">
+                {doc.year}
               </span>
             )}
           </div>
 
-          <span className="text-sm font-bold text-blue-600 group-hover:text-blue-800 transition-colors flex items-center gap-1 group-hover:underline underline-offset-4 bg-blue-50/50 px-3 py-1.5 rounded-lg group-hover:bg-blue-100">
-            View <span className="hidden sm:inline">Document</span> →
-          </span>
-        </div>
-      </article>
-    </Link>
+          {/* Title & Subject */}
+          <div className="flex-grow space-y-2 mb-4">
+            <h3 className="font-semibold text-base sm:text-lg text-ink group-hover:text-accent-gold transition-colors leading-snug line-clamp-2">
+              {doc.title}
+            </h3>
+
+            {doc.subject?.name && (
+              <p className="text-xs text-ink-muted flex items-center gap-1.5 line-clamp-1">
+                <BookOpen size={13} className="text-ink-faint shrink-0" />
+                <span>{doc.subject.name}</span>
+                {doc.subject.subject_code && (
+                  <span className="font-mono text-[10px] text-ink-faint">
+                    ({doc.subject.subject_code})
+                  </span>
+                )}
+              </p>
+            )}
+          </div>
+
+          {/* Academic Context (Course & Semester) */}
+          <div className="pt-3.5 border-t border-border flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 font-medium text-ink-muted line-clamp-1">
+              <GraduationCap size={14} className="text-ink-faint shrink-0" />
+              <span className="font-semibold text-ink">{courseDisplay}</span>
+              {semDisplay && <span className="text-ink-faint">· {semDisplay}</span>}
+            </div>
+
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-accent-gold group-hover:translate-x-0.5 transition-transform shrink-0">
+              Read <ArrowUpRight size={13} />
+            </span>
+          </div>
+        </article>
+      </Link>
+    </motion.div>
   );
 });
 
-// ─── Filter Dropdown Component ───────────────────────────────────────────────
-function NativeDropdown({
+// ─── Editorial Dropdown Filter Component ─────────────────────────────────────
+function EditorialDropdown({
   label,
   selectedValue,
   options,
@@ -667,71 +657,78 @@ function NativeDropdown({
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-2 px-3.5 py-1.5 bg-white border rounded-lg text-sm font-medium transition-colors shadow-sm ${
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors shadow-fine ${
           selectedValue
-            ? 'border-blue-500 text-blue-700 bg-blue-50/60 font-semibold'
-            : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+            ? 'bg-accent-gold-bg border-accent-gold text-accent-gold font-bold'
+            : 'bg-surface hover:bg-surface-subtle border-border text-ink-muted hover:text-ink'
         }`}
       >
         <span>{selectedValue || label}</span>
         {selectedValue && (
-          <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-            1
-          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-accent-gold" />
         )}
         <ChevronDown
-          size={14}
-          className={`transition-transform text-slate-400 ${open ? 'rotate-180' : ''}`}
+          size={13}
+          className={`transition-transform text-ink-faint ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
-      {open && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-40 py-2 max-h-72 overflow-y-auto">
-          {selectedValue && (
-            <button
-              onClick={() => {
-                onSelect('');
-                setOpen(false);
-              }}
-              className="w-full text-left px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 border-b border-slate-100 flex items-center justify-between"
-            >
-              <span>Clear {label} filter</span>
-              <X size={12} />
-            </button>
-          )}
-          {options.map((opt) => {
-            const isSelected = selectedValue === opt.value;
-            return (
-              <label
-                key={opt.value}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 mt-1.5 w-60 bg-surface border border-border rounded-xl shadow-editorial z-40 py-1.5 max-h-68 overflow-y-auto"
+          >
+            {selectedValue && (
+              <button
                 onClick={() => {
-                  onSelect(opt.value);
+                  onSelect('');
                   setOpen(false);
                 }}
-                className={`flex items-center justify-between px-4 py-2 hover:bg-slate-50 cursor-pointer group ${
-                  isSelected ? 'bg-blue-50/50' : ''
-                }`}
+                className="w-full text-left px-3.5 py-1.5 text-[11px] font-bold text-accent-crimson hover:bg-accent-crimson-bg border-b border-border flex items-center justify-between"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
-                      isSelected
-                        ? 'bg-blue-600 border-blue-600'
-                        : 'border-slate-300 group-hover:border-blue-400'
-                    }`}
-                  >
-                    {isSelected && <Check size={12} className="text-white" />}
+                <span>Clear {label} filter</span>
+                <X size={12} />
+              </button>
+            )}
+
+            {options.map((opt) => {
+              const isSelected = selectedValue === opt.value;
+              return (
+                <label
+                  key={opt.value}
+                  onClick={() => {
+                    onSelect(opt.value);
+                    setOpen(false);
+                  }}
+                  className={`flex items-center justify-between px-3.5 py-2 text-xs hover:bg-surface-subtle cursor-pointer transition-colors ${
+                    isSelected ? 'bg-surface-subtle font-semibold text-ink' : 'text-ink-muted'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 line-clamp-1 pr-2">
+                    <div
+                      className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition-colors ${
+                        isSelected
+                          ? 'bg-accent-gold border-accent-gold text-white'
+                          : 'border-border-strong'
+                      }`}
+                    >
+                      {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                    </div>
+                    <span className="truncate">{opt.label}</span>
                   </div>
-                  <span className="text-sm text-slate-700 line-clamp-1">{opt.label}</span>
-                </div>
-                <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full font-medium">
-                  {opt.count}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      )}
+                  <span className="font-tabular text-[10px] text-ink-faint bg-surface border border-border px-1.5 py-0.5 rounded">
+                    {opt.count}
+                  </span>
+                </label>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

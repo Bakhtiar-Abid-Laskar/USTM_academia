@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -11,18 +12,25 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-fraunces",
+  axes: ["opsz", "SOFT", "WONK"],
+});
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#0f172a",
+  themeColor: "#FAF9F5",
 };
 
 export const metadata: Metadata = {
   title: "USTM Academia — Academic Resource Portal",
   description:
-    "The official academic resource portal for University of Science and Technology Meghalaya. Access previous year question papers and syllabus PDFs.",
-  keywords: ["USTM", "question papers", "syllabus", "university", "Meghalaya", "academic"],
+    "The official academic resource portal for University of Science and Technology Meghalaya. Access verified previous year question papers (PYQs), syllabi, and study resources.",
+  keywords: ["USTM", "question papers", "syllabus", "university", "Meghalaya", "academic", "PYQ"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -50,27 +58,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
       <head>
-        {/* ✅ PERFORMANCE: Google Fonts optimization */}
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        {/* eslint-disable-next-line @next/next/google-font-preconnect */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          as="style"
-        />
-        
         <link rel="icon" href="/ustm-logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        
-        {/* ✅ DNS Prefetch for Google Fonts */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-background antialiased`}>
+      <body className={`${inter.className} min-h-screen bg-paper text-ink antialiased selection:bg-accent-gold/20 selection:text-ink`}>
+        <SmoothScroll />
         {children}
         <ServiceWorkerRegister />
         <Analytics />

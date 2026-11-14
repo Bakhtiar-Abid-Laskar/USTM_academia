@@ -2,32 +2,149 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   MODERN ACADEMIC EDITORIAL DESIGN TOKENS
+   ============================================================ */
+
 :root {
-  --background: #F8FAFC;
-  --foreground: #0F172A;
-  --font-inter: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --ink: #0F172A;
+  --ink-muted: #526071;
+  --ink-faint: #94A3B8;
+
+  --paper: #FAF9F5;
+  --surface: #FFFFFF;
+  --surface-subtle: #F3F1E9;
+  --surface-raised: #FFFFFF;
+
+  --border: #E6E3D8;
+  --border-strong: #CDC8BA;
+
+  --accent-gold: #B45309;
+  --accent-gold-bg: #FEF3C7;
+  --accent-crimson: #991B1B;
+  --accent-crimson-bg: #FEE2E2;
+  --accent-navy: #1E293B;
+  --accent-navy-subtle: #F1F5F9;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+[data-theme="dark"] {
+  --ink: #F8FAFC;
+  --ink-muted: #94A3B8;
+  --ink-faint: #64748B;
+
+  --paper: #090D16;
+  --surface: #111726;
+  --surface-subtle: #172033;
+  --surface-raised: #1A2438;
+
+  --border: #1E293B;
+  --border-strong: #334155;
+
+  --accent-gold: #F59E0B;
+  --accent-gold-bg: rgba(245, 158, 11, 0.15);
+  --accent-crimson: #EF4444;
+  --accent-crimson-bg: rgba(239, 68, 68, 0.15);
+  --accent-navy: #38BDF8;
+  --accent-navy-subtle: #1E293B;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+[data-theme="dark"] html {
+  color-scheme: dark;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-inter);
+  background-color: var(--background);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Focus styles for accessibility */
+/* Accessibility visible focus */
 *:focus-visible {
-  outline: 2px solid #3B82F6;
+  outline: 2px solid var(--accent-gold);
   outline-offset: 2px;
 }
 
 /* ============================================================
-   ANIMATIONS: Respect prefers-reduced-motion globally
+   TYPOGRAPHY UTILITIES
    ============================================================ */
+
+.font-editorial-heading {
+  font-family: var(--font-fraunces), Georgia, serif;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.font-editorial-serif {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+.font-tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ============================================================
+   SUBTLE EDITORIAL TEXTURE & LIGHT (REPLACES 2012 CUBES)
+   ============================================================ */
+
+.academic-grain {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+[data-theme="dark"] .academic-grain {
+  background-image: radial-gradient(rgba(248, 250, 252, 0.05) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Thin hairline archival borders */
+.border-hairline {
+  border-width: 1px;
+  border-color: var(--border);
+}
+
+/* ============================================================
+   LENIS SMOOTH SCROLLING
+   ============================================================ */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* ============================================================
+   ANIMATION SAFETY & PERFORMANCE
+   ============================================================ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -35,173 +152,6 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-}
-
-/* ============================================================
-   SCROLL-TRIGGERED ANIMATIONS
-   ============================================================ */
-
-/* Fade in with opacity + slight transform */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Slide up from below */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Slide in from left */
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Slide in from right */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Scale in from center */
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Animation classes applied by Intersection Observer */
-.animate-fade-in {
-  animation: fadeIn 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* Staggered delay utilities (for list items) */
-.animation-delay-100 { animation-delay: 100ms; }
-.animation-delay-200 { animation-delay: 200ms; }
-.animation-delay-300 { animation-delay: 300ms; }
-.animation-delay-400 { animation-delay: 400ms; }
-.animation-delay-500 { animation-delay: 500ms; }
-.animation-delay-600 { animation-delay: 600ms; }
-
-/* Default opacity: 0 until animation fires */
-.will-animate {
-  opacity: 0;
-}
-
-/* ============================================================
-   SKELETON LOADING ANIMATIONS
-   ============================================================ */
-
-/* Shimmer effect for skeleton loaders */
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-/* Pulse effect for skeleton loaders */
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    background-color: rgb(226, 232, 240);
-  }
-  50% {
-    opacity: 0.7;
-    background-color: rgb(203, 213, 225);
-  }
-}
-
-/* Apply shimmer animation to skeleton elements */
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgb(241, 245, 249) 0%,
-    rgb(226, 232, 240) 25%,
-    rgb(241, 245, 249) 50%,
-    rgb(226, 232, 240) 75%,
-    rgb(241, 245, 249) 100%
-  );
-  background-size: 1000px 100%;
-  animation: skeleton-shimmer 2s infinite;
-}
-
-/* Apply pulse animation to skeleton elements */
-.skeleton-pulse {
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-/* Rounded skeleton variation */
-.skeleton-rounded {
-  border-radius: 0.375rem;
-}
-
-/* Avatar skeleton (circular) */
-.skeleton-avatar {
-  border-radius: 9999px;
-  width: 40px;
-  height: 40px;
-  background-color: rgb(226, 232, 240);
-}
-
-.skeleton-avatar.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgb(241, 245, 249) 0%,
-    rgb(226, 232, 240) 25%,
-    rgb(241, 245, 249) 50%,
-    rgb(226, 232, 240) 75%,
-    rgb(241, 245, 249) 100%
-  );
-  background-size: 1000px 100%;
-  animation: skeleton-shimmer 2s infinite;
 }

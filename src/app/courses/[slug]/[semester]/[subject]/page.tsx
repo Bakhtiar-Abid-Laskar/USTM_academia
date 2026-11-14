@@ -1,14 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
-import { FileText, Download, Eye, Inbox, ChevronRight } from "lucide-react";
+import { FileText, Download, Eye, ChevronRight, BookOpen } from "lucide-react";
 
-// Enable ISR: Cache page for 1 hour, then revalidate in background
-export const revalidate = 3600; // 1 hour in seconds
+export const revalidate = 3600;
 
 export default async function SubjectDocumentsPage({
   params,
@@ -20,13 +16,32 @@ export default async function SubjectDocumentsPage({
   const semNum = parseInt(params.semester.replace("semester-", ""));
   if (isNaN(semNum)) notFound();
 
-  const { data: course } = await supabase.from("courses").select("*").eq("slug", params.slug).eq("is_active", true).single();
+  const { data: course } = await supabase
+    .from("courses")
+    .select("*")
+    .eq("slug", params.slug)
+    .eq("is_active", true)
+    .single();
+
   if (!course) notFound();
 
-  const { data: semester } = await supabase.from("semesters").select("*").eq("course_id", course.id).eq("semester_number", semNum).single();
+  const { data: semester } = await supabase
+    .from("semesters")
+    .select("*")
+    .eq("course_id", course.id)
+    .eq("semester_number", semNum)
+    .single();
+
   if (!semester) notFound();
 
-  const { data: subject } = await supabase.from("subjects").select("*").eq("slug", params.subject).eq("semester_id", semester.id).eq("course_id", course.id).single();
+  const { data: subject } = await supabase
+    .from("subjects")
+    .select("*")
+    .eq("slug", params.subject)
+    .eq("semester_id", semester.id)
+    .eq("course_id", course.id)
+    .single();
+
   if (!subject) notFound();
 
   const { data: documents } = await supabase
@@ -41,109 +56,158 @@ export default async function SubjectDocumentsPage({
   const questionPapers = documents?.filter((d: any) => d.document_type_id === 2) || [];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-paper text-ink">
       <PublicHeader />
-      <main className="flex-1">
-        <div className="max-w-content mx-auto px-4 sm:px-6 py-8">
-          <nav className="text-sm text-slate-500 mb-6 font-medium flex items-center flex-wrap gap-2" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1 -ml-1">Home</Link>
-            <ChevronRight className="w-4 h-4 text-slate-300" />
-            <Link href="/courses" className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">Courses</Link>
-            <ChevronRight className="w-4 h-4 text-slate-300" />
-            <Link href={`/courses/${course.slug}`} className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">{course.short_name}</Link>
-            <ChevronRight className="w-4 h-4 text-slate-300" />
-            <Link href={`/courses/${course.slug}/${params.semester}`} className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">{semester.label}</Link>
-            <ChevronRight className="w-4 h-4 text-slate-300" />
-            <span className="text-slate-800 font-semibold">{subject.name}</span>
-          </nav>
 
-          <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-main mb-1">{subject.name}</h1>
-            <p className="text-text-muted text-sm">
-              {course.short_name} • {semester.label}
-              {subject.subject_code && ` • ${subject.subject_code}`}
-            </p>
+      <main className="flex-1 w-full">
+        {/* ── Editorial Header ─────────────────────────────────────────────── */}
+        <section className="border-b border-border bg-surface py-12 sm:py-16 academic-grain">
+          <div className="max-w-editorial mx-auto px-4 sm:px-8">
+            {/* Breadcrumb Hierarchy */}
+            <nav className="text-xs text-ink-muted mb-4 font-medium flex items-center flex-wrap gap-1.5" aria-label="Breadcrumb">
+              <Link href="/" className="hover:text-accent-gold transition-colors">
+                Home
+              </Link>
+              <ChevronRight size={12} className="text-ink-faint" />
+              <Link href="/courses" className="hover:text-accent-gold transition-colors">
+                Courses
+              </Link>
+              <ChevronRight size={12} className="text-ink-faint" />
+              <Link href={`/courses/${course.slug}`} className="hover:text-accent-gold transition-colors">
+                {course.short_name}
+              </Link>
+              <ChevronRight size={12} className="text-ink-faint" />
+              <Link href={`/courses/${course.slug}/${params.semester}`} className="hover:text-accent-gold transition-colors">
+                {semester.label}
+              </Link>
+              <ChevronRight size={12} className="text-ink-faint" />
+              <span className="text-ink font-semibold">{subject.name}</span>
+            </nav>
+
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-accent-gold font-sans">
+                  {course.short_name} · {semester.label}
+                </span>
+                {subject.subject_code && (
+                  <>
+                    <span className="text-ink-faint">·</span>
+                    <span className="font-mono text-xs text-ink font-bold bg-surface-subtle border border-border px-2 py-0.5 rounded">
+                      {subject.subject_code}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <h1 className="font-editorial-heading text-3xl sm:text-5xl font-normal text-ink tracking-tight mb-2">
+                {subject.name}
+              </h1>
+              <p className="text-sm text-ink-muted">
+                Official syllabus PDFs and historical examination question papers catalogued for this subject.
+              </p>
+            </div>
           </div>
+        </section>
 
-          {(!documents || documents.length === 0) ? (
-            <div className="text-center py-16 text-text-muted">
-              <Inbox className="h-16 w-16 mx-auto mb-4 text-gray-200" />
-              <p className="text-lg font-medium mb-1">No documents available</p>
-              <p className="text-sm">Documents for this subject will be uploaded soon.</p>
+        {/* ── Documents Content ────────────────────────────────────────────── */}
+        <div className="max-w-editorial mx-auto px-4 sm:px-8 py-12 sm:py-16 space-y-12">
+          {!documents || documents.length === 0 ? (
+            <div className="p-16 text-center rounded-2xl border border-dashed border-border bg-surface max-w-lg mx-auto">
+              <FileText size={32} className="mx-auto text-ink-faint mb-3" />
+              <h3 className="font-semibold text-ink text-base">No papers archived yet</h3>
+              <p className="text-xs text-ink-muted mt-1">
+                Papers for this subject are currently being verified and will be uploaded soon.
+              </p>
             </div>
           ) : (
-            <div className="space-y-8">
-              {/* Syllabus Section */}
-              {syllabusDocs.length > 0 && (
-                <section>
-                  <h2 className="text-lg font-semibold text-text-main mb-4 flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    Syllabus
-                  </h2>
-                  <div className="space-y-3">
-                    {syllabusDocs.map((doc: any) => (
-                      <DocumentCard key={doc.id} doc={doc} />
-                    ))}
-                  </div>
-                </section>
-              )}
-
+            <>
               {/* Question Papers Section */}
               {questionPapers.length > 0 && (
                 <section>
-                  <h2 className="text-lg font-semibold text-text-main mb-4 flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    Previous Year Question Papers
-                  </h2>
-                  <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-3 border-b border-border mb-6">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-ink font-sans flex items-center gap-2">
+                      <FileText size={16} className="text-accent-gold" />
+                      Previous Year Question Papers ({questionPapers.length})
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {questionPapers.map((doc: any) => (
-                      <DocumentCard key={doc.id} doc={doc} />
+                      <DocumentTile key={doc.id} doc={doc} />
                     ))}
                   </div>
                 </section>
               )}
-            </div>
+
+              {/* Syllabus Section */}
+              {syllabusDocs.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between pb-3 border-b border-border mb-6">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-ink font-sans flex items-center gap-2">
+                      <BookOpen size={16} className="text-accent-navy" />
+                      Course Syllabus ({syllabusDocs.length})
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {syllabusDocs.map((doc: any) => (
+                      <DocumentTile key={doc.id} doc={doc} />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
           )}
         </div>
       </main>
+
       <PublicFooter />
     </div>
   );
 }
 
-function DocumentCard({ doc }: { doc: any }) {
+function DocumentTile({ doc }: { doc: any }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-text-main text-sm sm:text-base">{doc.title}</h3>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Badge variant={doc.document_type?.slug === "syllabus" ? "default" : "outline"}>
-                {doc.document_type?.name}
-              </Badge>
-              {doc.exam_type && <Badge variant="outline">{doc.exam_type.name}</Badge>}
-              {doc.year && <Badge variant="outline">{doc.year}</Badge>}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Link href={`/view/${doc.id}`}>
-              <Button size="sm">
-                <Eye className="h-3.5 w-3.5 mr-1.5" />
-                View PDF
-              </Button>
-            </Link>
-            {doc.is_downloadable && (
-              <a href={doc.file_url} download target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm">
-                  <Download className="h-3.5 w-3.5 mr-1.5" />
-                  Download
-                </Button>
-              </a>
-            )}
-          </div>
+    <article className="bg-surface border border-border hover:border-accent-gold/60 rounded-xl p-5 shadow-fine hover:shadow-editorial transition-all flex flex-col justify-between h-full group">
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <span className="font-tabular text-xs font-bold px-2 py-0.5 rounded bg-surface-subtle border border-border text-ink">
+            {doc.year || "2025"}
+          </span>
+          {doc.exam_type?.name && (
+            <span className="text-[10px] font-bold uppercase tracking-wider text-accent-gold">
+              {doc.exam_type.name}
+            </span>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        <h3 className="font-semibold text-base text-ink group-hover:text-accent-gold transition-colors leading-snug mb-3">
+          {doc.title}
+        </h3>
+      </div>
+
+      <div className="pt-3.5 border-t border-border flex items-center justify-between gap-2 mt-auto">
+        <Link
+          href={`/view/${doc.id}`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-xs font-semibold text-ink shadow-fine transition-colors"
+        >
+          <Eye size={13} className="text-ink-faint" />
+          <span>View Online</span>
+        </Link>
+
+        {doc.is_downloadable && (
+          <a
+            href={doc.google_drive_view_url || doc.file_url}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink hover:bg-accent-navy text-surface text-xs font-semibold shadow-fine transition-colors"
+          >
+            <Download size={13} />
+            <span>Download</span>
+          </a>
+        )}
+      </div>
+    </article>
   );
 }

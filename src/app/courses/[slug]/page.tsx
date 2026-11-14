@@ -2,10 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
-import { Calendar, Building2, BookOpen, ChevronRight } from "lucide-react";
+import { Building2, BookOpen, ArrowUpRight, ChevronRight, Layers, GraduationCap } from "lucide-react";
 
-// Enable ISR: Cache page for 1 hour, then revalidate in background
-export const revalidate = 3600; // 1 hour in seconds
+export const revalidate = 3600;
 
 function getOrdinalSuffix(n: number): string {
   const s = ["th", "st", "nd", "rd"];
@@ -18,14 +17,14 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
 
   const { data: course } = await supabase
     .from("courses")
-    .select("*, department:departments(name)")
+    .select("*, department:departments(name, code)")
     .eq("slug", params.slug)
     .eq("is_active", true)
     .single();
 
   if (!course) notFound();
 
-  // ✅ OPTIMIZED: Fetch semesters with subjects to count documents
+  // Fetch semesters with subjects
   const { data: semesters } = await supabase
     .from("semesters")
     .select("*, subjects(id)")
@@ -33,94 +32,128 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
     .eq("is_active", true)
     .order("semester_number");
 
-  const deptName = typeof course.department === "object" && course.department
-    ? course.department.name
-    : course.department;
+  const deptName =
+    typeof course.department === "object" && course.department
+      ? course.department.name
+      : course.department;
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-paper text-ink">
       <PublicHeader />
-      <main className="flex-1 w-full">
-        
-        {/* Minimal Hero Header */}
-        <div className="bg-white border-b border-slate-200 py-12 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 animate-fade-in">
-            {/* Breadcrumb */}
-            <nav className="text-sm text-slate-500 mb-4 font-medium flex items-center flex-wrap gap-2" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1 -ml-1">Home</Link>
-              <ChevronRight className="w-4 h-4 text-slate-300" />
-              <Link href="/courses" className="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1">Courses</Link>
-              <ChevronRight className="w-4 h-4 text-slate-300" />
-              <span className="text-slate-800 font-semibold">{course.short_name}</span>
-            </nav>
-            
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-3">{course.name}</h1>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-lg text-slate-600 font-medium">{course.short_name}</span>
-              {deptName && (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                  <span className="flex items-center gap-1.5 text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                    <Building2 className="w-4 h-4 text-blue-500" />
-                    {deptName}
-                  </span>
-                </>
-              )}
-            </div>
-            
-            {course.description && (
-              <p className="mt-6 text-slate-600 max-w-3xl leading-relaxed">
-                {course.description}
-              </p>
-            )}
-          </div>
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3 animate-fade-in">
-            <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600 shadow-sm">
-              <Calendar className="h-6 w-6" />
+      <main className="flex-1 w-full">
+        {/* ── Editorial Header ─────────────────────────────────────────────── */}
+        <section className="border-b border-border bg-surface py-12 sm:py-16 academic-grain">
+          <div className="max-w-editorial mx-auto px-4 sm:px-8">
+            {/* Breadcrumb */}
+            <nav className="text-xs text-ink-muted mb-4 font-medium flex items-center gap-1.5" aria-label="Breadcrumb">
+              <Link href="/" className="hover:text-accent-gold transition-colors">
+                Home
+              </Link>
+              <ChevronRight size={12} className="text-ink-faint" />
+              <Link href="/courses" className="hover:text-accent-gold transition-colors">
+                Courses
+              </Link>
+              <ChevronRight size={12} className="text-ink-faint" />
+              <span className="text-ink font-semibold">{course.short_name}</span>
+            </nav>
+
+            <div className="max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-accent-gold font-sans">
+                  {course.short_name} Curriculum
+                </span>
+                {deptName && (
+                  <>
+                    <span className="text-ink-faint">·</span>
+                    <span className="text-xs text-ink-muted flex items-center gap-1">
+                      <Building2 size={12} /> {deptName}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <h1 className="font-editorial-heading text-3xl sm:text-5xl font-normal text-ink tracking-tight mb-4 leading-tight">
+                {course.name}
+              </h1>
+
+              {course.description && (
+                <p className="text-sm sm:text-base text-ink-muted leading-relaxed mb-6 max-w-2xl">
+                  {course.description}
+                </p>
+              )}
+
+              <div className="flex flex-wrap gap-3 text-xs font-medium">
+                <span className="px-3 py-1 rounded-md bg-surface-subtle border border-border text-ink">
+                  Duration: <strong className="font-tabular">{course.duration_years} Years</strong>
+                </span>
+                <span className="px-3 py-1 rounded-md bg-surface-subtle border border-border text-ink">
+                  Structure: <strong className="font-tabular">{course.total_semesters} Semesters</strong>
+                </span>
+              </div>
             </div>
-            Select a Semester
-          </h2>
+          </div>
+        </section>
+
+        {/* ── Semester Tiles Grid ─────────────────────────────────────────── */}
+        <div className="max-w-editorial mx-auto px-4 sm:px-8 py-12 sm:py-16">
+          <div className="flex items-center justify-between pb-4 border-b border-border mb-8">
+            <div className="flex items-center gap-2">
+              <Layers size={16} className="text-accent-gold" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-ink font-sans">
+                Select Semester
+              </h2>
+            </div>
+            <span className="text-xs font-medium text-ink-muted">
+              Choose your semester to access subjects and papers
+            </span>
+          </div>
 
           {!semesters || semesters.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-slate-200 border-dashed shadow-sm animate-fade-in">
-              <div className="bg-slate-50 p-6 rounded-full mb-6">
-                <Calendar className="w-12 h-12 text-slate-300" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">No semesters available</h3>
-              <p className="text-slate-500">Semesters for this course will be added soon.</p>
+            <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-surface max-w-lg mx-auto">
+              <GraduationCap size={28} className="mx-auto text-ink-faint mb-3" />
+              <h3 className="font-semibold text-ink">Semesters pending release</h3>
+              <p className="text-xs text-ink-muted mt-1">Course semesters will be published shortly.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {semesters.map((sem: any, index: number) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {semesters.map((sem: any) => {
                 const subjectCount = sem.subjects?.length || 0;
                 return (
-                  <Link 
-                    key={sem.id} 
+                  <Link
+                    key={sem.id}
                     href={`/courses/${course.slug}/semester-${sem.semester_number}`}
-                    className="will-animate animate-slide-up block group"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className="block group"
                   >
-                    <article className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:shadow-blue-500/5 hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 text-center relative overflow-hidden h-full flex flex-col justify-center">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity -mr-8 -mt-8 pointer-events-none" />
-                      
-                      <div className="relative z-10">
-                        <div className="text-4xl font-extrabold text-slate-800 group-hover:text-blue-600 transition-colors mb-2 tracking-tight">
-                          {sem.semester_number}<sup className="text-xl font-bold text-slate-400 group-hover:text-blue-400">{getOrdinalSuffix(sem.semester_number)}</sup>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">Semester</p>
-                        
-                        <div className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-600 text-xs px-3 py-1.5 rounded-lg font-medium border border-slate-100 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-100 transition-colors">
-                          <BookOpen className="w-3.5 h-3.5" />
-                          {subjectCount > 0 ? (
-                            <span>{subjectCount} {subjectCount === 1 ? 'subject' : 'subjects'}</span>
-                          ) : (
-                            <span>Coming soon</span>
-                          )}
-                        </div>
+                    <article className="h-full bg-surface border border-border hover:border-accent-gold/60 rounded-xl p-6 shadow-fine hover:shadow-editorial transition-all duration-200 flex flex-col justify-between relative overflow-hidden group-hover:-translate-y-0.5">
+                      {/* Top Large Roman / Ordinal numeral */}
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="font-editorial-heading text-3xl sm:text-4xl font-normal text-ink group-hover:text-accent-gold transition-colors font-tabular">
+                          0{sem.semester_number}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-surface-subtle border border-border text-ink-muted">
+                          {sem.semester_number}
+                          {getOrdinalSuffix(sem.semester_number)} Term
+                        </span>
+                      </div>
+
+                      <div className="mb-4">
+                        <h3 className="font-semibold text-base text-ink mb-1 group-hover:text-accent-gold transition-colors">
+                          {sem.label}
+                        </h3>
+                        <p className="text-xs text-ink-muted flex items-center gap-1.5">
+                          <BookOpen size={13} className="text-ink-faint shrink-0" />
+                          <span>
+                            {subjectCount > 0
+                              ? `${subjectCount} Subject${subjectCount > 1 ? "s" : ""} Indexed`
+                              : "Subjects catalogued"}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-ink-faint group-hover:text-accent-gold transition-colors mt-auto">
+                        <span>Access Papers</span>
+                        <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </div>
                     </article>
                   </Link>
@@ -130,6 +163,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
           )}
         </div>
       </main>
+
       <PublicFooter />
     </div>
   );
