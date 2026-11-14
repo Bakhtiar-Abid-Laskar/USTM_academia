@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, Eye, Download, Inbox, AlertCircle } from "lucide-react";
+import { Search, Loader2, Eye, Download, Inbox, AlertCircle, X } from "lucide-react";
 
 interface SearchResponse {
   data: any[];
@@ -20,7 +20,7 @@ interface SearchResponse {
   query?: string;
 }
 
-// ✅ PERF FIX #1: Memoized result card to prevent unnecessary re-renders
+// Memoised result card — avoids re-renders during pagination
 const SearchResultCard = memo(function SearchResultCard({ doc }: { doc: any }) {
   return (
     <Card>
@@ -29,11 +29,11 @@ const SearchResultCard = memo(function SearchResultCard({ doc }: { doc: any }) {
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-text-main text-sm sm:text-base">{doc.title}</h3>
             <div className="flex flex-wrap items-center gap-1 mt-1 text-xs text-text-muted">
-              <span>{doc.course?.short_name}</span>
-              <span>•</span>
-              <span>{doc.semester?.label}</span>
-              <span>•</span>
-              <span>{doc.subject?.name}</span>
+              {doc.course?.short_name && <span>{doc.course.short_name}</span>}
+              {doc.course?.short_name && doc.semester?.label && <span>•</span>}
+              {doc.semester?.label && <span>{doc.semester.label}</span>}
+              {doc.subject?.name && <span>•</span>}
+              {doc.subject?.name && <span>{doc.subject.name}</span>}
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <Badge variant={doc.document_type?.slug === "syllabus" ? "default" : "outline"}>
@@ -49,7 +49,9 @@ const SearchResultCard = memo(function SearchResultCard({ doc }: { doc: any }) {
             </Link>
             {doc.is_downloadable && (
               <a href={doc.file_url} download target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm"><Download className="h-3.5 w-3.5 mr-1.5" />Download</Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-3.5 w-3.5 mr-1.5" />Download
+                </Button>
               </a>
             )}
           </div>
@@ -71,42 +73,45 @@ export default function SearchContent() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  
-  // ✅ FIX #6: Debounce timer reference
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const MIN_SEARCH_LENGTH = 2;
-  const DEBOUNCE_DELAY_MS = 300;
+  const [totalResults, setTotalResults] = useState(0);
 
-  useEffect(() => {
-    if (initialQ) doSearch(initialQ, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const MIN_SEARCH_LENGTH = 2;
+  const DEBOUNCE_DELAY_MS = 350;
 
   const doSearch = useCallback(async (q: string, pageNum: number = 0) => {
-    if (!q.trim()) {
+    if (!q.trim() || q.trim().length < MIN_SEARCH_LENGTH) {
       setResults([]);
       setSearched(false);
+      setTotalPages(0);
+      setTotalResults(0);
       return;
     }
 
-    if (q.trim().length < MIN_SEARCH_LENGTH) {
-      return;
-    }
+    // Cancel any in-flight request
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
 
     setLoading(true);
     setSearched(true);
     setError("");
+
     try {
       const params = new URLSearchParams({
         q: q.trim(),
         page: String(pageNum),
         limit: "20",
       });
-      const res = await fetch(`/api/search?${params}`);
-      
+
+      const res = await fetch(`/api/search?${params}`, {
+        signal: abortRef.current.signal,
+      });
+
       if (!res.ok) {
         if (res.status === 429) {
-          setError("Search rate limit exceeded. Please wait a moment and try again.");
+          setError("Too many requests — please wait a moment before searching again.");
         } else if (res.status === 400) {
           setError("Search query is too long. Please use fewer characters.");
         } else {
@@ -114,61 +119,82 @@ export default function SearchContent() {
         }
         setResults([]);
         setTotalPages(0);
+        setTotalResults(0);
         return;
       }
 
       const data: SearchResponse = await res.json();
+
       if (Array.isArray(data.data)) {
         setResults(data.data);
-        setTotalPages(data.pages || 0);
+        setTotalPages(data.pages ?? 0);
+        setTotalResults(data.total ?? data.data.length);
         setPage(pageNum);
       } else {
-        setError("Unexpected response format");
+        setError("Unexpected response format. Please try again.");
         setResults([]);
-        setTotalPages(0);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === "AbortError") return; // Ignore cancelled requests
       console.error("Search error:", err);
       setError("Network error. Please check your connection and try again.");
       setResults([]);
       setTotalPages(0);
+      setTotalResults(0);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  // ✅ FIX #6: Debounce input change
-  const handleInputChange = useCallback((value: string) => {
-    setQuery(value);
-    
-    // Cancel previous timer
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
+  // Run search on initial load if URL has ?q=
+  useEffect(() => {
+    if (initialQ) doSearch(initialQ, 0);
+    return () => {
+      // Cleanup on unmount
+      if (abortRef.current) abortRef.current.abort();
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    // Set new timer
-    debounceTimer.current = setTimeout(() => {
-      if (value.trim().length < MIN_SEARCH_LENGTH) {
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setQuery(value);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      if (!value.trim() || value.trim().length < MIN_SEARCH_LENGTH) {
         setResults([]);
         setSearched(false);
+        setError("");
+        router.replace("/search", { scroll: false });
         return;
       }
 
-      router.replace(`/search?q=${encodeURIComponent(value.trim())}`);
-      doSearch(value, 0);
-    }, DEBOUNCE_DELAY_MS);
-  }, [doSearch, router]);
+      debounceRef.current = setTimeout(() => {
+        router.replace(`/search?q=${encodeURIComponent(value.trim())}`, { scroll: false });
+        doSearch(value, 0);
+      }, DEBOUNCE_DELAY_MS);
+    },
+    [doSearch, router]
+  );
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
-    
-    // Cancel debounce and search immediately
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    
-    router.replace(`/search?q=${encodeURIComponent(query.trim())}`);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    router.replace(`/search?q=${encodeURIComponent(query.trim())}`, { scroll: false });
     doSearch(query, 0);
+  }
+
+  function handleClear() {
+    setQuery("");
+    setResults([]);
+    setSearched(false);
+    setError("");
+    setPage(0);
+    setTotalPages(0);
+    setTotalResults(0);
+    router.replace("/search", { scroll: false });
   }
 
   const handleNextPage = () => {
@@ -194,13 +220,23 @@ export default function SearchContent() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
           <Input
             type="search"
-            placeholder="Search by title, subject, course... (min 2 characters)"
+            placeholder="Search by title, subject, course… (min 2 characters)"
             value={query}
-            onChange={e => handleInputChange(e.target.value)}
-            className="pl-10"
+            onChange={(e) => handleInputChange(e.target.value)}
+            className="pl-10 pr-10"
             autoFocus
             maxLength={200}
           />
+          {query && (
+            <button
+              type="button"
+              onClick={handleClear}
+              aria-label="Clear"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
         <Button type="submit" disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
@@ -217,7 +253,7 @@ export default function SearchContent() {
       {loading ? (
         <div className="text-center py-12 animate-fade-in">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
-          <p className="text-text-muted">Searching...</p>
+          <p className="text-text-muted">Searching…</p>
         </div>
       ) : !searched ? (
         <div className="text-center py-16 text-text-muted animate-fade-in">
@@ -230,25 +266,31 @@ export default function SearchContent() {
           <Inbox className="h-12 w-12 mx-auto mb-3 text-gray-300" />
           <p className="text-lg mb-1">No results found</p>
           <p className="text-sm">Try different keywords or browse by course.</p>
-          <Link href="/courses"><Button variant="outline" className="mt-4">Browse Courses</Button></Link>
+          <Link href="/courses">
+            <Button variant="outline" className="mt-4">Browse Courses</Button>
+          </Link>
         </div>
       ) : (
         <div className="animate-fade-in">
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-text-muted">
-              {results.length} result{results.length !== 1 ? "s" : ""} found
+              {totalResults.toLocaleString()} result{totalResults !== 1 ? "s" : ""} found
               {totalPages > 1 && ` (Page ${page + 1} of ${totalPages})`}
             </p>
+            <button
+              onClick={handleClear}
+              className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
+            >
+              <X className="h-3 w-3" /> Clear
+            </button>
           </div>
-          
-          {/* ✅ PERF FIX #2: Removed staggered animations that cause UI freezing */}
-          <div className="space-y-3 animate-fade-in">
+
+          <div className="space-y-3">
             {results.map((doc: any) => (
               <SearchResultCard key={doc.id} doc={doc} />
             ))}
           </div>
 
-          {/* ✅ FIX #5: Pagination controls */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t">
               <Button
