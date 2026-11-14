@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
@@ -10,20 +10,14 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-fraunces",
-  axes: ["opsz", "SOFT", "WONK"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#FAF9F5",
+  themeColor: "#EFF6FF",
 };
 
 export const metadata: Metadata = {
@@ -58,12 +52,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="en" className={inter.variable}>
       <head>
         <link rel="icon" href="/ustm-logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-paper text-ink antialiased selection:bg-accent-gold/20 selection:text-ink`}>
+      <body className={`${inter.className} min-h-screen bg-brand-bg text-brand-text antialiased selection:bg-brand-light selection:text-brand-navy`}>
         <SmoothScroll />
         {children}
         <ServiceWorkerRegister />

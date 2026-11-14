@@ -12,19 +12,9 @@ export const metadata: Metadata = {
   description:
     "Official centralized repository for University of Science and Technology Meghalaya students. Access verified previous year question papers (PYQs) and syllabi.",
   keywords: ["USTM", "question papers", "syllabus", "previous year papers", "exam preparation", "PYQ"],
-  openGraph: {
-    title: "USTM Academia — Academic Question Papers & Curricula",
-    description: "Access verified previous year question papers and syllabi for USTM courses.",
-    url: "https://ustm-academia.vercel.app",
-    siteName: "USTM Academia",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "USTM Academia — Academic Repository",
-    description: "Verified question papers and syllabi for USTM students",
-  },
 };
+
+export const revalidate = 3600;
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -72,129 +62,140 @@ export default async function HomePage() {
     .eq("is_active", true);
 
   return (
-    <div className="flex flex-col min-h-screen bg-paper text-ink">
+    <div className="flex flex-col min-h-screen bg-[#EFF6FF] text-[#172B4D]">
       <PublicHeader />
 
       <main className="flex-1 w-full">
-        {/* ── 1. ASYMMETRIC EDITORIAL HERO ─────────────────────────────────── */}
-        <section className="border-b border-border bg-surface relative overflow-hidden py-16 sm:py-24 academic-grain">
-          <div className="max-w-editorial mx-auto px-4 sm:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        {/* ── 1. PROFESSIONAL HERO SECTION ─────────────────────────────────── */}
+        <section className="bg-[#EFF6FF] border-b border-[#DCE6F1] py-12 sm:py-18 lg:py-20">
+          <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
               
-              {/* Left Column: Editorial Headline & Primary Search */}
+              {/* Left Column: Heading, Search & Quick Links */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-subtle border border-border text-xs font-semibold text-ink-muted">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent-gold" />
-                  <span>Central University Repository</span>
-                  <span className="text-ink-faint">·</span>
-                  <span>Free Student Access</span>
+                
+                {/* Institutional Portal Label */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#DBEAFE] border border-[#BFDBFE] text-[11px] font-semibold text-[#1D4ED8] tracking-wider uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8]" />
+                  <span>USTM STUDENT RESOURCE PORTAL</span>
                 </div>
 
-                <h1 className="font-editorial-heading text-4xl sm:text-6xl lg:text-7xl font-normal text-ink tracking-tight leading-[1.05]">
-                  The Academic Archive{" "}
-                  <span className="italic font-editorial-serif text-accent-gold block sm:inline">
-                    for USTM Students.
-                  </span>
+                {/* Professional, Non-Italic Sans-Serif Heading */}
+                <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold text-[#172554] tracking-tight leading-[1.15]">
+                  Your Academic Resources, <br className="hidden sm:inline" />
+                  All in One Place.
                 </h1>
 
-                <p className="text-base sm:text-lg text-ink-muted leading-relaxed max-w-xl">
-                  An authoritative, open library of previous year question papers, official curricula,
-                  and semester syllabi. Zero login friction, optimized for mobile connectivity.
+                {/* Institutional Description */}
+                <p className="text-base sm:text-lg text-[#64748B] leading-relaxed max-w-xl font-normal">
+                  Access previous year question papers, official curricula, and semester syllabi
+                  through a centralized academic resource library built for USTM students.
                 </p>
 
-                {/* Search Bar Affordance */}
-                <div className="pt-2 max-w-xl">
-                  <Link
-                    href="/search"
-                    className="group block relative rounded-2xl border border-border bg-paper p-4 sm:p-5 pl-13 pr-32 shadow-fine hover:shadow-editorial hover:border-accent-gold/60 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-accent-gold/20"
+                {/* Prominent Search Bar with Clear Alignment (No overlap) */}
+                <div className="pt-1 max-w-xl">
+                  <form
+                    action="/search"
+                    method="GET"
+                    className="relative flex items-center w-full bg-white border border-[#DCE6F1] hover:border-[#2563EB] focus-within:border-[#1D4ED8] focus-within:ring-2 focus-within:ring-[#1D4ED8]/20 rounded-xl shadow-fine transition-all p-1.5"
                   >
-                    <Search
-                      size={20}
-                      className="absolute left-5 top-1/2 -translate-y-1/2 text-ink-faint group-hover:text-accent-gold transition-colors"
+                    <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-[#64748B] shrink-0">
+                      <Search size={19} />
+                    </div>
+                    <input
+                      type="text"
+                      name="q"
+                      autoComplete="off"
+                      placeholder="Search by course, subject, or year..."
+                      className="w-full py-2.5 px-2 bg-transparent text-sm sm:text-base text-[#172B4D] placeholder:text-[#94A3B8] focus:outline-none"
                     />
-                    <span className="text-sm sm:text-base text-ink-faint font-normal block truncate">
-                      Search by course, subject, or year...
-                    </span>
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-ink text-surface group-hover:bg-accent-navy text-xs font-semibold shadow-fine transition-all">
+                    <button
+                      type="submit"
+                      className="shrink-0 px-4 py-2 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                    >
                       <span>Search</span>
-                      <ChevronRight size={13} />
-                    </span>
-                  </Link>
+                      <ChevronRight size={14} />
+                    </button>
+                  </form>
 
-                  {/* Quick Filter Categories */}
-                  <div className="flex flex-wrap items-center gap-2 mt-4 text-xs font-medium">
-                    <span className="text-ink-faint">Direct jump:</span>
+                  {/* 3 Compact and Consistent Quick-Access Links */}
+                  <div className="flex flex-wrap items-center gap-2.5 mt-4 text-xs font-medium">
+                    <span className="text-[#64748B] text-xs font-medium mr-1">Quick access:</span>
                     <Link
                       href="/search?type=question-paper"
-                      className="px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-ink-muted hover:text-ink transition-colors shadow-fine inline-flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg border border-[#DCE6F1] bg-white hover:border-[#2563EB] hover:bg-[#F8FBFF] text-[#172B4D] transition-colors shadow-fine inline-flex items-center gap-1.5 font-medium"
                     >
-                      <FileText size={13} className="text-accent-gold" />
-                      PYQs
+                      <FileText size={13} className="text-[#1D4ED8]" />
+                      Previous Year Questions
                     </Link>
                     <Link
                       href="/search?type=syllabus"
-                      className="px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-ink-muted hover:text-ink transition-colors shadow-fine inline-flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg border border-[#DCE6F1] bg-white hover:border-[#2563EB] hover:bg-[#F8FBFF] text-[#172B4D] transition-colors shadow-fine inline-flex items-center gap-1.5 font-medium"
                     >
-                      <BookOpen size={13} className="text-accent-navy" />
-                      Syllabi
+                      <BookOpen size={13} className="text-[#0284C7]" />
+                      Semester Syllabi
                     </Link>
                     <Link
                       href="/courses"
-                      className="px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-ink-muted hover:text-ink transition-colors shadow-fine inline-flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg border border-[#DCE6F1] bg-white hover:border-[#2563EB] hover:bg-[#F8FBFF] text-[#172B4D] transition-colors shadow-fine inline-flex items-center gap-1.5 font-medium"
                     >
-                      <GraduationCap size={13} className="text-accent-crimson" />
+                      <GraduationCap size={13} className="text-[#172554]" />
                       All Courses
                     </Link>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Live Archive Digest & Real Metrics */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="rounded-2xl border border-border bg-surface p-6 shadow-editorial relative overflow-hidden">
-                  <div className="flex items-center justify-between pb-4 border-b border-border">
+              {/* Right Column: Live Catalog Digest Dashboard Card */}
+              <div className="lg:col-span-5 space-y-3.5">
+                <div className="rounded-xl border border-[#DCE6F1] bg-white p-6 shadow-card relative">
+                  
+                  {/* Card Header with Live Status */}
+                  <div className="flex items-center justify-between pb-4 border-b border-[#DCE6F1]">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-ink font-sans">
+                      <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-[#172554] font-sans">
                         Live Catalog Digest
-                      </h3>
+                      </h2>
                     </div>
-                    <span className="text-[11px] font-mono text-ink-faint">Live Database</span>
+                    <span className="text-[11px] font-mono text-[#64748B] bg-[#EFF6FF] border border-[#DCE6F1] px-2 py-0.5 rounded">
+                      Live Database
+                    </span>
                   </div>
 
-                  {/* Real Stats Grid */}
-                  <div className="grid grid-cols-3 gap-3 py-5 border-b border-border">
+                  {/* Statistics Row */}
+                  <div className="grid grid-cols-3 gap-3 py-5 border-b border-[#DCE6F1]">
                     <div>
-                      <div className="font-editorial-heading text-2xl sm:text-3xl font-normal text-ink font-tabular">
+                      <div className="font-sans text-2xl sm:text-3xl font-bold text-[#172554] font-tabular">
                         {totalDocs ?? 0}
                       </div>
-                      <div className="text-[11px] text-ink-muted font-medium mt-0.5">
+                      <div className="text-[11px] text-[#64748B] font-medium mt-0.5">
                         Verified Papers
                       </div>
                     </div>
                     <div>
-                      <div className="font-editorial-heading text-2xl sm:text-3xl font-normal text-ink font-tabular">
+                      <div className="font-sans text-2xl sm:text-3xl font-bold text-[#172554] font-tabular">
                         {totalCourses ?? 0}
                       </div>
-                      <div className="text-[11px] text-ink-muted font-medium mt-0.5">
+                      <div className="text-[11px] text-[#64748B] font-medium mt-0.5">
                         Programs
                       </div>
                     </div>
                     <div>
-                      <div className="font-editorial-heading text-2xl sm:text-3xl font-normal text-ink font-tabular">
+                      <div className="font-sans text-2xl sm:text-3xl font-bold text-[#172554] font-tabular">
                         {totalDepts ?? 0}
                       </div>
-                      <div className="text-[11px] text-ink-muted font-medium mt-0.5">
+                      <div className="text-[11px] text-[#64748B] font-medium mt-0.5">
                         Departments
                       </div>
                     </div>
                   </div>
 
-                  {/* Recently Uploaded Micro Feed */}
+                  {/* Recent Additions List */}
                   <div className="pt-4 space-y-3">
-                    <div className="flex items-center justify-between text-xs text-ink-muted">
-                      <span className="font-semibold text-ink">Recent additions</span>
-                      <Link href="/search" className="text-accent-gold hover:underline font-bold text-[11px]">
+                    <div className="flex items-center justify-between text-xs text-[#64748B]">
+                      <span className="font-semibold text-[#172554]">Recent Additions</span>
+                      <Link href="/search" className="text-[#1D4ED8] hover:underline font-semibold text-xs">
                         Browse all →
                       </Link>
                     </div>
@@ -204,17 +205,17 @@ export default async function HomePage() {
                         <Link
                           key={doc.id}
                           href={`/view/${doc.id}`}
-                          className="flex items-center justify-between p-2.5 rounded-lg border border-border/70 hover:border-accent-gold/40 hover:bg-surface-subtle transition-all group"
+                          className="flex items-center justify-between p-2.5 rounded-lg border border-[#DCE6F1] bg-[#F8FBFF] hover:bg-[#EFF6FF] hover:border-[#BFDBFE] transition-colors group"
                         >
                           <div className="min-w-0 pr-3">
-                            <p className="text-xs font-semibold text-ink truncate group-hover:text-accent-gold transition-colors">
+                            <p className="text-xs font-semibold text-[#172B4D] truncate group-hover:text-[#1D4ED8] transition-colors">
                               {doc.title}
                             </p>
-                            <p className="text-[11px] text-ink-faint">
-                              {doc.course?.short_name} · Sem {doc.semester?.semester_number}
+                            <p className="text-[11px] text-[#64748B]">
+                              {doc.course?.short_name || "Course"} · Sem {doc.semester?.semester_number || "—"}
                             </p>
                           </div>
-                          <span className="font-tabular text-[10px] font-bold px-2 py-0.5 rounded bg-paper border border-border text-ink-muted shrink-0">
+                          <span className="font-tabular text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#DCE6F1] text-[#172554] shrink-0">
                             {doc.year || "2025"}
                           </span>
                         </Link>
@@ -223,11 +224,11 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                {/* University Accreditation Note */}
-                <div className="p-4 rounded-xl border border-border bg-surface-subtle/60 flex items-center gap-3 text-xs text-ink-muted">
-                  <ShieldCheck size={18} className="text-accent-gold shrink-0" />
+                {/* University Institutional Assurance Note */}
+                <div className="p-3.5 rounded-xl border border-[#DCE6F1] bg-white flex items-center gap-2.5 text-xs text-[#64748B] shadow-fine">
+                  <ShieldCheck size={16} className="text-[#16A34A] shrink-0" />
                   <span>
-                    Indexed according to official USTM semester curricula guidelines.
+                    Official syllabus records and question archives for USTM students.
                   </span>
                 </div>
               </div>
@@ -237,121 +238,120 @@ export default async function HomePage() {
         </section>
 
         {/* ── 2. BROWSE ACADEMIC PROGRAMS (COURSES) ─────────────────────────── */}
-        <section className="max-w-editorial mx-auto px-4 sm:px-8 py-16 sm:py-24">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 pb-4 border-b border-border">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-accent-gold font-sans mb-1">
-                Academic Hierarchy
+        <section className="bg-[#F8FBFF] border-b border-[#DCE6F1] py-14 sm:py-20">
+          <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-4 border-b border-[#DCE6F1]">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-[#1D4ED8] font-sans mb-1">
+                  Academic Structure
+                </div>
+                <h2 className="font-sans text-2xl sm:text-3xl font-bold text-[#172554] tracking-tight">
+                  Browse by Academic Program
+                </h2>
               </div>
-              <h2 className="font-editorial-heading text-2xl sm:text-4xl font-normal text-ink">
-                Browse by Academic Program
-              </h2>
+
+              <Link
+                href="/courses"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1D4ED8] hover:underline group"
+              >
+                <span>View all programs directory</span>
+                <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </Link>
             </div>
 
-            <Link
-              href="/courses"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-ink hover:text-accent-gold transition-colors group"
-            >
-              <span>View complete curriculum directory</span>
-              <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </Link>
-          </div>
+            {!courses || courses.length === 0 ? (
+              <div className="p-10 text-center rounded-xl border border-dashed border-[#DCE6F1] bg-white">
+                <BookOpen size={28} className="mx-auto text-[#94A3B8] mb-2" />
+                <h3 className="font-semibold text-[#172554]">No programs available yet</h3>
+                <p className="text-xs text-[#64748B] mt-1">Course archives will appear here shortly.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {courses.map((course: any) => {
+                  const deptName =
+                    typeof course.department === "object" && course.department
+                      ? course.department.name
+                      : course.department;
 
-          {!courses || courses.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-surface">
-              <BookOpen size={28} className="mx-auto text-ink-faint mb-3" />
-              <h3 className="font-semibold text-ink">No programs available yet</h3>
-              <p className="text-xs text-ink-muted mt-1">Course archives will appear here shortly.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course: any) => {
-                const deptName =
-                  typeof course.department === "object" && course.department
-                    ? course.department.name
-                    : course.department;
+                  return (
+                    <Link
+                      key={course.id}
+                      href={`/courses/${course.slug}`}
+                      className="block group h-full"
+                    >
+                      <article className="h-full bg-white border border-[#DCE6F1] hover:border-[#2563EB] rounded-xl p-5 sm:p-6 shadow-fine hover:shadow-card transition-all duration-150 flex flex-col justify-between">
+                        <div>
+                          {/* Top Meta Bar */}
+                          <div className="flex items-center justify-between gap-2 mb-2.5">
+                            <span className="text-[11px] font-bold text-[#1D4ED8] uppercase tracking-wider font-sans bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#BFDBFE]">
+                              {course.short_name}
+                            </span>
+                            <span className="text-xs font-tabular font-medium text-[#64748B]">
+                              {course.total_semesters} Semesters
+                            </span>
+                          </div>
 
-                return (
-                  <Link
-                    key={course.id}
-                    href={`/courses/${course.slug}`}
-                    className="block group h-full"
-                  >
-                    <article className="h-full bg-surface border border-border hover:border-accent-gold/60 rounded-xl p-6 sm:p-7 shadow-fine hover:shadow-editorial transition-all duration-200 flex flex-col justify-between relative overflow-hidden">
-                      {/* Department Accent Ribbon */}
-                      <div className="absolute top-0 left-0 bottom-0 w-1 bg-accent-gold/40 group-hover:bg-accent-gold transition-colors" />
+                          {/* Course Full Title */}
+                          <h3 className="font-semibold text-base sm:text-lg text-[#172554] group-hover:text-[#1D4ED8] transition-colors leading-snug mb-2">
+                            {course.name}
+                          </h3>
 
-                      <div>
-                        {/* Top Meta Bar */}
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className="text-[11px] font-bold text-accent-gold uppercase tracking-wider font-sans">
-                            {course.short_name}
-                          </span>
-                          <span className="text-xs font-tabular font-medium text-ink-muted bg-surface-subtle border border-border px-2.5 py-0.5 rounded">
-                            {course.total_semesters} Semesters
-                          </span>
+                          {deptName && (
+                            <p className="text-xs text-[#64748B] flex items-start gap-1.5 mb-4">
+                              <Building2 size={13} className="text-[#94A3B8] shrink-0 mt-0.5" />
+                              <span className="line-clamp-1">{deptName}</span>
+                            </p>
+                          )}
                         </div>
 
-                        {/* Course Full Title */}
-                        <h3 className="font-semibold text-lg text-ink group-hover:text-accent-gold transition-colors leading-snug mb-3">
-                          {course.name}
-                        </h3>
-
-                        {deptName && (
-                          <p className="text-xs text-ink-muted flex items-start gap-1.5 mb-6">
-                            <Building2 size={13} className="text-ink-faint shrink-0 mt-0.5" />
-                            <span className="line-clamp-1">{deptName}</span>
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Bottom Footer Affordance */}
-                      <div className="pt-4 border-t border-border flex items-center justify-between text-xs font-semibold text-ink-muted group-hover:text-ink transition-colors mt-auto">
-                        <span className="font-tabular text-ink-faint">
-                          {course.duration_years} Year Degree
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-accent-gold group-hover:translate-x-1 transition-transform">
-                          <span>Open Archive</span>
-                          <ArrowUpRight size={13} />
-                        </span>
-                      </div>
-                    </article>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+                        {/* Bottom Footer Affordance */}
+                        <div className="pt-3 border-t border-[#DCE6F1] flex items-center justify-between text-xs font-medium text-[#64748B] group-hover:text-[#172554] transition-colors mt-auto">
+                          <span className="font-tabular">
+                            {course.duration_years} Year Degree
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[#1D4ED8] font-semibold group-hover:translate-x-1 transition-transform">
+                            <span>Open Program</span>
+                            <ArrowUpRight size={13} />
+                          </span>
+                        </div>
+                      </article>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
 
-        {/* ── 3. ACADEMIC LEDGER: RECENTLY ADDED PAPERS ────────────────────── */}
+        {/* ── 3. ARCHIVAL ACTIVITY: RECENTLY ADDED PAPERS ───────────────────── */}
         {recentDocs && recentDocs.length > 0 && (
-          <section className="border-t border-border bg-surface py-16 sm:py-24">
-            <div className="max-w-editorial mx-auto px-4 sm:px-8">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <section className="bg-white py-14 sm:py-20">
+            <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-accent-gold font-sans mb-1">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#1D4ED8] font-sans mb-1">
                     Archival Activity
                   </div>
-                  <h2 className="font-editorial-heading text-2xl sm:text-4xl font-normal text-ink">
+                  <h2 className="font-sans text-2xl sm:text-3xl font-bold text-[#172554] tracking-tight">
                     Recently Added Documents
                   </h2>
                 </div>
 
                 <Link
                   href="/search"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-ink hover:text-accent-gold transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#1D4ED8] hover:underline"
                 >
                   <span>Search all {totalDocs} records</span>
                   <ArrowUpRight size={13} />
                 </Link>
               </div>
 
-              {/* Ledger Table Container */}
-              <div className="border border-border rounded-xl bg-paper shadow-fine overflow-hidden">
+              {/* Table Container */}
+              <div className="border border-[#DCE6F1] rounded-xl bg-white shadow-fine overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="border-b border-border bg-surface-subtle/80 text-ink-muted font-bold uppercase tracking-wider text-[10px]">
+                      <tr className="border-b border-[#DCE6F1] bg-[#F8FBFF] text-[#64748B] font-semibold uppercase tracking-wider text-[11px]">
                         <th className="py-3.5 px-4 sm:px-6">Document Title</th>
                         <th className="py-3.5 px-4">Program</th>
                         <th className="py-3.5 px-4">Semester</th>
@@ -360,48 +360,48 @@ export default async function HomePage() {
                         <th className="py-3.5 px-4 sm:px-6 text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border font-sans">
+                    <tbody className="divide-y divide-[#DCE6F1] font-sans">
                       {recentDocs.map((doc: any) => (
                         <tr
                           key={doc.id}
-                          className="hover:bg-surface transition-colors group"
+                          className="hover:bg-[#F8FBFF] transition-colors group"
                         >
                           {/* Title */}
-                          <td className="py-4 px-4 sm:px-6 font-semibold text-ink group-hover:text-accent-gold transition-colors">
+                          <td className="py-3.5 px-4 sm:px-6 font-semibold text-[#172B4D] group-hover:text-[#1D4ED8] transition-colors">
                             <Link href={`/view/${doc.id}`} className="block truncate max-w-xs sm:max-w-sm">
                               {doc.title}
                             </Link>
                           </td>
 
                           {/* Program */}
-                          <td className="py-4 px-4 font-medium text-ink-muted whitespace-nowrap">
+                          <td className="py-3.5 px-4 font-medium text-[#64748B] whitespace-nowrap">
                             {doc.course?.short_name || "—"}
                           </td>
 
                           {/* Semester */}
-                          <td className="py-4 px-4 text-ink-muted whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-[#64748B] whitespace-nowrap">
                             {doc.semester?.label || (doc.semester?.semester_number ? `Sem ${doc.semester.semester_number}` : "—")}
                           </td>
 
                           {/* Year */}
-                          <td className="py-4 px-4 font-tabular font-bold text-ink whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded bg-surface border border-border">
+                          <td className="py-3.5 px-4 font-tabular font-bold text-[#172554] whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded bg-[#EFF6FF] border border-[#BFDBFE]">
                               {doc.year || "2025"}
                             </span>
                           </td>
 
                           {/* Classification */}
-                          <td className="py-4 px-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-subtle border border-border text-ink-muted">
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-[#F8FBFF] border border-[#DCE6F1] text-[#64748B]">
                               {doc.document_type?.name || "PYQ"}
                             </span>
                           </td>
 
                           {/* Action Button */}
-                          <td className="py-4 px-4 sm:px-6 text-right whitespace-nowrap">
+                          <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
                             <Link
                               href={`/view/${doc.id}`}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-ink hover:text-surface hover:border-ink text-xs font-semibold text-ink shadow-fine transition-all"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-[#DCE6F1] bg-white hover:bg-[#1D4ED8] hover:text-white hover:border-[#1D4ED8] text-xs font-semibold text-[#172B4D] shadow-fine transition-all"
                             >
                               <span>View</span>
                               <ArrowUpRight size={12} />

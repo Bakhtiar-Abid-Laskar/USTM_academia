@@ -2,118 +2,148 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicHeader, PublicFooter } from "@/components/public/layout";
-import { Building2, BookOpen, ArrowUpRight, ChevronRight, Layers, GraduationCap } from "lucide-react";
+import { Building2, ArrowUpRight, ChevronRight, Layers, GraduationCap } from "lucide-react";
+import { Metadata } from "next";
 
 export const revalidate = 3600;
 
-function getOrdinalSuffix(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return s[(v - 20) % 10] || s[v] || s[0];
-}
-
-export default async function CourseDetailPage({ params }: { params: { slug: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
   const supabase = await createClient();
-
   const { data: course } = await supabase
     .from("courses")
-    .select("*, department:departments(name, code)")
+    .select("name, short_name, description")
     .eq("slug", params.slug)
-    .eq("is_active", true)
+    .single();
+
+  if (!course) return { title: "Course Not Found — USTM Academia" };
+
+  return {
+    title: `${course.name} (${course.short_name}) Semesters & Papers — USTM Academia`,
+    description: `Access question papers, syllabi, and semester subjects for ${course.name} at USTM.`,
+  };
+}
+
+function getOrdinalSuffix(i: number): string {
+  const j = i % 10,
+    k = i % 100;
+  if (j === 1 && k !== 11) return "st";
+  if (j === 2 && k !== 12) return "nd";
+  if (j === 3 && k !== 13) return "rd";
+  return "th";
+}
+
+export default async function CourseDetailPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const supabase = await createClient();
+
+  // Fetch course details
+  const { data: course } = await supabase
+    .from("courses")
+    .select(`
+      id, name, short_name, slug, duration_years, total_semesters, description,
+      department:departments(name, code)
+    `)
+    .eq("slug", params.slug)
     .single();
 
   if (!course) notFound();
 
-  // Fetch semesters with subjects
+  // Fetch semesters belonging to this course
   const { data: semesters } = await supabase
     .from("semesters")
-    .select("*, subjects(id)")
+    .select(`
+      id, semester_number, label,
+      subjects:subjects(id)
+    `)
     .eq("course_id", course.id)
-    .eq("is_active", true)
     .order("semester_number");
 
-  const deptName =
-    typeof course.department === "object" && course.department
-      ? course.department.name
-      : course.department;
+  const dept: any = Array.isArray(course.department) ? course.department[0] : course.department;
+  const deptName = typeof dept === "object" && dept ? dept.name : (typeof dept === "string" ? dept : undefined);
 
   return (
-    <div className="flex flex-col min-h-screen bg-paper text-ink">
+    <div className="flex flex-col min-h-screen bg-[#EFF6FF] text-[#172B4D]">
       <PublicHeader />
 
       <main className="flex-1 w-full">
-        {/* ── Editorial Header ─────────────────────────────────────────────── */}
-        <section className="border-b border-border bg-surface py-12 sm:py-16 academic-grain">
-          <div className="max-w-editorial mx-auto px-4 sm:px-8">
-            {/* Breadcrumb */}
-            <nav className="text-xs text-ink-muted mb-4 font-medium flex items-center gap-1.5" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-accent-gold transition-colors">
+        {/* Header Section */}
+        <section className="border-b border-[#DCE6F1] bg-[#EFF6FF] py-12 sm:py-16">
+          <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#64748B] mb-3 font-mono">
+              <Link href="/" className="hover:text-[#1D4ED8] transition-colors">
                 Home
               </Link>
-              <ChevronRight size={12} className="text-ink-faint" />
-              <Link href="/courses" className="hover:text-accent-gold transition-colors">
+              <ChevronRight size={12} className="text-[#94A3B8]" />
+              <Link href="/courses" className="hover:text-[#1D4ED8] transition-colors">
                 Courses
               </Link>
-              <ChevronRight size={12} className="text-ink-faint" />
-              <span className="text-ink font-semibold">{course.short_name}</span>
+              <ChevronRight size={12} className="text-[#94A3B8]" />
+              <span className="text-[#172554] font-semibold">{course.short_name}</span>
             </nav>
 
             <div className="max-w-3xl">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-accent-gold font-sans">
+              <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#1D4ED8] font-sans bg-[#DBEAFE] px-2 py-0.5 rounded border border-[#BFDBFE]">
                   {course.short_name} Curriculum
                 </span>
                 {deptName && (
                   <>
-                    <span className="text-ink-faint">·</span>
-                    <span className="text-xs text-ink-muted flex items-center gap-1">
+                    <span className="text-[#94A3B8]">·</span>
+                    <span className="text-xs text-[#64748B] flex items-center gap-1">
                       <Building2 size={12} /> {deptName}
                     </span>
                   </>
                 )}
               </div>
 
-              <h1 className="font-editorial-heading text-3xl sm:text-5xl font-normal text-ink tracking-tight mb-4 leading-tight">
+              <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#172554] tracking-tight mb-3 leading-tight">
                 {course.name}
               </h1>
 
               {course.description && (
-                <p className="text-sm sm:text-base text-ink-muted leading-relaxed mb-6 max-w-2xl">
+                <p className="text-sm sm:text-base text-[#64748B] leading-relaxed mb-5 max-w-2xl">
                   {course.description}
                 </p>
               )}
 
-              <div className="flex flex-wrap gap-3 text-xs font-medium">
-                <span className="px-3 py-1 rounded-md bg-surface-subtle border border-border text-ink">
-                  Duration: <strong className="font-tabular">{course.duration_years} Years</strong>
+              <div className="flex flex-wrap gap-2.5 text-xs font-medium">
+                <span className="px-3 py-1 rounded-md bg-white border border-[#DCE6F1] text-[#172B4D]">
+                  Duration: <strong className="font-tabular text-[#172554]">{course.duration_years} Years</strong>
                 </span>
-                <span className="px-3 py-1 rounded-md bg-surface-subtle border border-border text-ink">
-                  Structure: <strong className="font-tabular">{course.total_semesters} Semesters</strong>
+                <span className="px-3 py-1 rounded-md bg-white border border-[#DCE6F1] text-[#172B4D]">
+                  Structure: <strong className="font-tabular text-[#172554]">{course.total_semesters} Semesters</strong>
                 </span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── Semester Tiles Grid ─────────────────────────────────────────── */}
-        <div className="max-w-editorial mx-auto px-4 sm:px-8 py-12 sm:py-16">
-          <div className="flex items-center justify-between pb-4 border-b border-border mb-8">
+        {/* Semester Tiles Grid */}
+        <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+          <div className="flex items-center justify-between pb-3.5 border-b border-[#DCE6F1] mb-6">
             <div className="flex items-center gap-2">
-              <Layers size={16} className="text-accent-gold" />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-ink font-sans">
+              <Layers size={16} className="text-[#1D4ED8]" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[#172554] font-sans">
                 Select Semester
               </h2>
             </div>
-            <span className="text-xs font-medium text-ink-muted">
+            <span className="text-xs font-medium text-[#64748B]">
               Choose your semester to access subjects and papers
             </span>
           </div>
 
           {!semesters || semesters.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-border bg-surface max-w-lg mx-auto">
-              <GraduationCap size={28} className="mx-auto text-ink-faint mb-3" />
-              <h3 className="font-semibold text-ink">Semesters pending release</h3>
-              <p className="text-xs text-ink-muted mt-1">Course semesters will be published shortly.</p>
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#DCE6F1] bg-white max-w-lg mx-auto">
+              <GraduationCap size={28} className="mx-auto text-[#94A3B8] mb-2" />
+              <h3 className="font-semibold text-[#172554]">Semesters pending release</h3>
+              <p className="text-xs text-[#64748B] mt-1">Course semesters will be published shortly.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -125,35 +155,30 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
                     href={`/courses/${course.slug}/semester-${sem.semester_number}`}
                     className="block group"
                   >
-                    <article className="h-full bg-surface border border-border hover:border-accent-gold/60 rounded-xl p-6 shadow-fine hover:shadow-editorial transition-all duration-200 flex flex-col justify-between relative overflow-hidden group-hover:-translate-y-0.5">
+                    <article className="h-full bg-white border border-[#DCE6F1] hover:border-[#2563EB] rounded-xl p-5 sm:p-6 shadow-fine hover:shadow-card transition-all duration-150 flex flex-col justify-between">
                       {/* Top Large Roman / Ordinal numeral */}
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="font-editorial-heading text-3xl sm:text-4xl font-normal text-ink group-hover:text-accent-gold transition-colors font-tabular">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-sans text-3xl sm:text-4xl font-bold text-[#172554] group-hover:text-[#1D4ED8] transition-colors font-tabular">
                           0{sem.semester_number}
                         </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-surface-subtle border border-border text-ink-muted">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8]">
                           {sem.semester_number}
                           {getOrdinalSuffix(sem.semester_number)} Term
                         </span>
                       </div>
 
                       <div className="mb-4">
-                        <h3 className="font-semibold text-base text-ink mb-1 group-hover:text-accent-gold transition-colors">
-                          {sem.label}
+                        <h3 className="font-bold text-base text-[#172554] group-hover:text-[#1D4ED8] transition-colors mb-1">
+                          {sem.label || `Semester ${sem.semester_number}`}
                         </h3>
-                        <p className="text-xs text-ink-muted flex items-center gap-1.5">
-                          <BookOpen size={13} className="text-ink-faint shrink-0" />
-                          <span>
-                            {subjectCount > 0
-                              ? `${subjectCount} Subject${subjectCount > 1 ? "s" : ""} Indexed`
-                              : "Subjects catalogued"}
-                          </span>
+                        <p className="text-xs text-[#64748B]">
+                          {subjectCount} active {subjectCount === 1 ? "curriculum subject" : "curriculum subjects"}
                         </p>
                       </div>
 
-                      <div className="pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-ink-faint group-hover:text-accent-gold transition-colors mt-auto">
-                        <span>Access Papers</span>
-                        <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      <div className="pt-3 border-t border-[#DCE6F1] flex items-center justify-between text-xs font-semibold text-[#1D4ED8] group-hover:translate-x-0.5 transition-transform">
+                        <span>Browse Subjects</span>
+                        <ArrowUpRight size={13} />
                       </div>
                     </article>
                   </Link>

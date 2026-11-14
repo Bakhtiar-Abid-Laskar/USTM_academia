@@ -14,11 +14,6 @@ export const metadata: Metadata = {
     url: "https://ustm-academia.vercel.app/about",
     type: "website",
   },
-  twitter: {
-    card: "summary",
-    title: "About USTM Academia",
-    description: "Verified academic question papers and syllabi for USTM courses",
-  },
 };
 
 const pillars = [
@@ -48,7 +43,7 @@ const pillars = [
     tag: "Resilience",
     title: "Low-Bandwidth Optimization",
     description:
-      "Built with minimal asset overhead and aggressive caching so students on 3G/4G campus cellular networks can retrieve documents without delays.",
+      "Built with minimal asset overhead and aggressive caching so students on campus cellular networks can retrieve documents without delays.",
   },
 ];
 
@@ -77,22 +72,22 @@ const steps = [
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-paper text-ink">
+    <div className="flex flex-col min-h-screen bg-[#EFF6FF] text-[#172B4D]">
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Editorial Masthead */}
-        <section className="border-b border-border bg-surface py-14 sm:py-20 academic-grain">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Masthead Section */}
+        <section className="border-b border-[#DCE6F1] bg-[#EFF6FF] py-12 sm:py-16">
+          <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-gold-bg text-accent-gold border border-accent-gold/30 text-xs font-mono font-medium mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#DBEAFE] text-[#1D4ED8] border border-[#BFDBFE] text-xs font-semibold mb-4">
                 <GraduationCap className="w-3.5 h-3.5" />
                 <span>Institutional Academic Repository</span>
               </div>
-              <h1 className="font-editorial-heading text-3xl sm:text-5xl lg:text-6xl text-ink font-normal tracking-tight leading-[1.08] mb-6">
-                Preserving <span className="font-editorial-serif italic font-medium text-accent-gold">academic rigor</span> for every student.
+              <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl text-[#172554] font-bold tracking-tight leading-[1.15] mb-4">
+                Preserving Academic Rigor for Every Student.
               </h1>
-              <p className="text-base sm:text-lg text-ink-muted leading-relaxed font-sans font-normal">
+              <p className="text-base sm:text-lg text-[#64748B] leading-relaxed font-sans font-normal">
                 USTM Academia is the centralized digital repository for the University of Science and Technology Meghalaya (USTM),
                 providing open, unencumbered access to verified past examination papers and syllabi across all departments.
               </p>
@@ -101,42 +96,42 @@ export default function AboutPage() {
         </section>
 
         {/* Mission & Core Pillars */}
-        <section className="py-14 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-border">
+        <section className="py-12 sm:py-16 max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-4 border-b border-[#DCE6F1]">
             <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-accent-gold font-semibold">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1D4ED8]">
                 Archival Philosophy
               </span>
-              <h2 className="font-editorial-heading text-2xl sm:text-3xl text-ink mt-1 font-semibold">
+              <h2 className="font-sans text-2xl sm:text-3xl text-[#172554] mt-1 font-bold">
                 Designed for speed, verified for authenticity.
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-ink-muted max-w-md mt-3 md:mt-0 font-sans">
+            <p className="text-xs sm:text-sm text-[#64748B] max-w-md mt-2 md:mt-0">
               Every detail is calibrated to eliminate friction between a student and the paper they need before an examination.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {pillars.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div
                   key={idx}
-                  className="bg-surface rounded-xl border border-border p-6 flex flex-col justify-between hover:border-border-strong hover:shadow-sm transition-all"
+                  className="bg-white rounded-xl border border-[#DCE6F1] p-5 sm:p-6 flex flex-col justify-between hover:border-[#2563EB] hover:shadow-card transition-all"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-surface-subtle border border-border flex items-center justify-center text-ink">
-                        <Icon className="w-5 h-5 text-accent-gold" />
+                      <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-[#1D4ED8]">
+                        <Icon className="w-5 h-5 text-[#1D4ED8]" />
                       </div>
-                      <span className="text-[11px] font-mono font-medium text-ink-faint px-2 py-0.5 rounded bg-surface-subtle border border-border/50">
+                      <span className="text-[11px] font-mono font-medium text-[#64748B] px-2 py-0.5 rounded bg-[#F8FBFF] border border-[#DCE6F1]">
                         {item.tag}
                       </span>
                     </div>
-                    <h3 className="font-editorial-heading text-lg font-semibold text-ink mb-2">
+                    <h3 className="font-sans text-base sm:text-lg font-bold text-[#172554] mb-2">
                       {item.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-ink-muted leading-relaxed font-sans">
+                    <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
                       {item.description}
                     </p>
                   </div>
@@ -147,34 +142,34 @@ export default function AboutPage() {
         </section>
 
         {/* The 4-Step How It Works Section */}
-        <section className="py-14 sm:py-20 bg-surface border-y border-border academic-grain">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="max-w-2xl mb-12">
-              <span className="text-xs font-mono uppercase tracking-wider text-accent-gold font-semibold">
+        <section className="py-12 sm:py-16 bg-[#F8FBFF] border-y border-[#DCE6F1]">
+          <div className="max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl mb-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1D4ED8]">
                 Student Workflow
               </span>
-              <h2 className="font-editorial-heading text-2xl sm:text-3xl text-ink mt-1 font-semibold">
+              <h2 className="font-sans text-2xl sm:text-3xl text-[#172554] mt-1 font-bold">
                 How to navigate the archive
               </h2>
-              <p className="text-sm text-ink-muted mt-2">
+              <p className="text-sm text-[#64748B] mt-1.5">
                 Four clear steps from course selection to offline study.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {steps.map((st) => (
                 <div
                   key={st.num}
-                  className="bg-paper rounded-xl border border-border p-6 flex flex-col justify-between relative"
+                  className="bg-white rounded-xl border border-[#DCE6F1] p-5 sm:p-6 flex flex-col justify-between shadow-fine"
                 >
                   <div>
-                    <div className="font-editorial-heading text-3xl font-normal text-border-strong mb-3">
+                    <div className="font-sans text-2xl sm:text-3xl font-bold text-[#BFD0E2] mb-3">
                       {st.num}
                     </div>
-                    <h3 className="font-sans text-base font-semibold text-ink mb-2">
+                    <h3 className="font-sans text-base font-bold text-[#172554] mb-2">
                       {st.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
                       {st.description}
                     </p>
                   </div>
@@ -182,17 +177,17 @@ export default function AboutPage() {
               ))}
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-4 pt-6 border-t border-border/70">
+            <div className="mt-8 flex flex-wrap items-center gap-3 pt-6 border-t border-[#DCE6F1]">
               <Link
                 href="/courses"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-ink text-paper text-xs sm:text-sm font-semibold hover:bg-ink/90 active:scale-[0.98] transition-all shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#1D4ED8] text-white text-xs sm:text-sm font-semibold hover:bg-[#1E40AF] transition-all shadow-fine"
               >
                 <span>Browse Academic Programs</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/search"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface hover:bg-surface-subtle text-ink border border-border text-xs sm:text-sm font-medium transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-[#F8FBFF] text-[#172B4D] border border-[#DCE6F1] text-xs sm:text-sm font-medium transition-all"
               >
                 <span>Open Instant Search</span>
               </Link>
@@ -200,18 +195,18 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Institutional Colophon / Governance */}
-        <section className="py-14 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="bg-surface rounded-xl border border-border p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {/* Institutional Assurance / Governance */}
+        <section className="py-12 sm:py-16 max-w-editorial mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-xl border border-[#DCE6F1] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-fine">
             <div className="max-w-2xl">
-              <div className="flex items-center gap-2 text-xs font-mono text-emerald-700 font-semibold mb-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 mb-2">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Official University Administration</span>
               </div>
-              <h3 className="font-editorial-heading text-xl font-semibold text-ink mb-2">
+              <h3 className="font-sans text-xl font-bold text-[#172554] mb-2">
                 Questions, syllabus revisions, or contributions?
               </h3>
-              <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
                 Repository holdings are maintained in coordination with university faculty and academic coordinators.
                 If you detect a missing paper or outdated syllabus code, reach out through the academic help desk.
               </p>
@@ -219,9 +214,9 @@ export default function AboutPage() {
             <div className="flex-shrink-0">
               <Link
                 href="/help"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-paper hover:bg-surface-subtle text-ink text-xs sm:text-sm font-medium transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#DCE6F1] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[#1D4ED8] text-xs sm:text-sm font-semibold transition-all"
               >
-                <span>Visit Help & Inquiries</span>
+                <span>Visit Help & FAQ</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

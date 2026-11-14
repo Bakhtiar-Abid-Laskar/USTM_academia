@@ -3,55 +3,101 @@
 @tailwind utilities;
 
 /* ============================================================
-   MODERN ACADEMIC EDITORIAL DESIGN TOKENS
+   USTM ACADEMIA — PROFESSIONAL ACADEMIC LIGHT-BLUE THEME
    ============================================================ */
 
 :root {
-  --ink: #0F172A;
-  --ink-muted: #526071;
-  --ink-faint: #94A3B8;
+  /* Backgrounds */
+  --bg-main: #EFF6FF;
+  --bg-secondary: #F8FBFF;
+  --bg-card: #FFFFFF;
 
-  --paper: #FAF9F5;
-  --surface: #FFFFFF;
-  --surface-subtle: #F3F1E9;
+  /* Primary Brand Colours */
+  --blue-primary: #1D4ED8;
+  --blue-secondary: #2563EB;
+  --navy-dark: #172554;
+  --blue-light: #DBEAFE;
+  --blue-faint: #F0F7FF;
+
+  /* Borders */
+  --border: #DCE6F1;
+  --border-subtle: #E8EEF5;
+  --border-strong: #BFD0E2;
+
+  /* Typography */
+  --text-primary: #172B4D;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+
+  /* Supporting / Status */
+  --accent-cyan: #0284C7;
+  --accent-cyan-bg: #E0F2FE;
+  --status-success: #16A34A;
+  --status-success-bg: #DCFCE7;
+  --status-warning: #EA580C;
+  --status-warning-bg: #FFEDD5;
+
+  /* Semantic Theme Aliases */
+  --ink: var(--text-primary);
+  --ink-muted: var(--text-secondary);
+  --ink-faint: var(--text-muted);
+  --paper: var(--bg-main);
+  --surface: var(--bg-card);
+  --surface-subtle: var(--bg-secondary);
   --surface-raised: #FFFFFF;
+  --accent-gold: var(--blue-primary);
+  --accent-gold-bg: var(--blue-light);
+  --accent-crimson: var(--blue-secondary);
+  --accent-crimson-bg: var(--blue-light);
+  --accent-navy: var(--navy-dark);
+  --accent-navy-subtle: var(--bg-main);
 
-  --border: #E6E3D8;
-  --border-strong: #CDC8BA;
-
-  --accent-gold: #B45309;
-  --accent-gold-bg: #FEF3C7;
-  --accent-crimson: #991B1B;
-  --accent-crimson-bg: #FEE2E2;
-  --accent-navy: #1E293B;
-  --accent-navy-subtle: #F1F5F9;
-
-  --background: var(--paper);
-  --foreground: var(--ink);
+  --background: var(--bg-main);
+  --foreground: var(--text-primary);
 }
 
 [data-theme="dark"] {
-  --ink: #F8FAFC;
-  --ink-muted: #94A3B8;
-  --ink-faint: #64748B;
+  --bg-main: #0B1120;
+  --bg-secondary: #0F172A;
+  --bg-card: #1E293B;
 
-  --paper: #090D16;
-  --surface: #111726;
-  --surface-subtle: #172033;
-  --surface-raised: #1A2438;
+  --blue-primary: #3B82F6;
+  --blue-secondary: #60A5FA;
+  --navy-dark: #F8FAFC;
+  --blue-light: rgba(59, 130, 246, 0.15);
+  --blue-faint: rgba(59, 130, 246, 0.08);
 
-  --border: #1E293B;
-  --border-strong: #334155;
+  --border: #334155;
+  --border-subtle: #1E293B;
+  --border-strong: #475569;
 
-  --accent-gold: #F59E0B;
-  --accent-gold-bg: rgba(245, 158, 11, 0.15);
-  --accent-crimson: #EF4444;
-  --accent-crimson-bg: rgba(239, 68, 68, 0.15);
-  --accent-navy: #38BDF8;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  --accent-cyan: #38BDF8;
+  --accent-cyan-bg: rgba(56, 189, 248, 0.15);
+  --status-success: #22C55E;
+  --status-success-bg: rgba(34, 197, 94, 0.15);
+  --status-warning: #F97316;
+  --status-warning-bg: rgba(249, 115, 22, 0.15);
+
+  --ink: var(--text-primary);
+  --ink-muted: var(--text-secondary);
+  --ink-faint: var(--text-muted);
+  --paper: var(--bg-main);
+  --surface: var(--bg-card);
+  --surface-subtle: var(--bg-secondary);
+  --surface-raised: #1E293B;
+  --accent-gold: var(--blue-primary);
+  --accent-gold-bg: var(--blue-light);
+  --accent-crimson: var(--blue-secondary);
+  --accent-crimson-bg: var(--blue-light);
+  --accent-navy: #93C5FD;
   --accent-navy-subtle: #1E293B;
 
-  --background: var(--paper);
-  --foreground: var(--ink);
+  --background: var(--bg-main);
+  --foreground: var(--text-primary);
 }
 
 html {
@@ -74,43 +120,27 @@ body {
 
 /* Accessibility visible focus */
 *:focus-visible {
-  outline: 2px solid var(--accent-gold);
+  outline: 2px solid var(--blue-primary);
   outline-offset: 2px;
 }
 
 /* ============================================================
-   TYPOGRAPHY UTILITIES
+   TYPOGRAPHY UTILITIES — CLEAN MODERN SANS-SERIF
    ============================================================ */
 
-.font-editorial-heading {
-  font-family: var(--font-fraunces), Georgia, serif;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-}
-
-.font-editorial-serif {
-  font-family: var(--font-fraunces), Georgia, serif;
+.font-editorial-heading,
+.font-editorial-serif,
+.font-heading {
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-style: normal !important;
+  letter-spacing: -0.02em;
 }
 
 .font-tabular {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* ============================================================
-   SUBTLE EDITORIAL TEXTURE & LIGHT (REPLACES 2012 CUBES)
-   ============================================================ */
-
-.academic-grain {
-  background-image: radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 0);
-  background-size: 24px 24px;
-}
-
-[data-theme="dark"] .academic-grain {
-  background-image: radial-gradient(rgba(248, 250, 252, 0.05) 1px, transparent 0);
-  background-size: 24px 24px;
-}
-
-/* Thin hairline archival borders */
+/* Clean border hairline utility */
 .border-hairline {
   border-width: 1px;
   border-color: var(--border);
@@ -142,7 +172,7 @@ html.lenis body {
 }
 
 /* ============================================================
-   ANIMATION SAFETY & PERFORMANCE
+   ANIMATION SAFETY & ACCESSIBILITY
    ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {

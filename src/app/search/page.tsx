@@ -24,13 +24,13 @@ export const metadata: Metadata = {
 
 export default function SearchPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-[#EFF6FF]">
       <PublicHeader />
       <main className="flex-1 w-full relative">
         <Suspense
           fallback={
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#1D4ED8]" />
             </div>
           }
         >
