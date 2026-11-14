@@ -2,7 +2,7 @@
 
 # 📚 USTM Academia
 
-**The Official Academic Resource Portal for USTM**
+**An Unofficial, Student-Built Academic Resource Portal for USTM Students**
 
 *Find Your Papers. Ace Your Exams.*
 
@@ -15,6 +15,13 @@
 [![Algolia](https://img.shields.io/badge/Algolia-Search-5468FF?style=flat-square&logo=algolia)](https://algolia.com)
 
 </div>
+
+> **Disclaimer:** USTM Academia is an independent, student-developed hobby project.
+> It is **not an official platform** of the University of Science and Technology
+> Meghalaya (USTM) and is not affiliated with, endorsed by, or maintained by the
+> university or any of its departments. Documents are shared for educational
+> reference only. Students should verify syllabi and exam information with
+> official university sources.
 
 ---
 
@@ -36,8 +43,9 @@
 
 ## 🎯 Overview
 
-**USTM Academia** is a centralized, web-based academic resource portal built exclusively for
-students of the **University of Science and Technology Meghalaya (USTM)**. The platform provides
+**USTM Academia** is a centralized, web-based academic resource portal built by a student of the
+**University of Science and Technology Meghalaya (USTM)** as an independent hobby project, for the
+benefit of fellow students. It is not an official university platform. The platform provides
 structured, on-demand access to critical academic resources — **previous year question papers (PYQs)**
 and **course syllabi** — organized logically by **Course → Semester → Subject**.
 
@@ -45,17 +53,17 @@ and **course syllabi** — organized logically by **Course → Semester → Subj
 
 ### Problem Solved
 
-USTM students currently lack a single authoritative source for question papers and syllabi,
+USTM students currently lack a single, easily accessible source for question papers and syllabi,
 leading to:
 - ❌ Students relying on informal WhatsApp groups and unverified sources
 - ❌ Inefficient manual searches across fragmented platforms
-- ❌ Potential access to incorrect or outdated material
+- ❌ Risk of outdated or incorrect material from informal sources
 - ❌ Mobile-unfriendly document storage
 
 ### Solution
 
 USTM Academia eliminates these challenges by providing:
-- ✅ One centralized, reliable repository for all academic documents
+- ✅ One centralized repository for academic documents, organized by course, semester, and subject
 - ✅ Fast, mobile-friendly access — no login required for students
 - ✅ Algolia-powered instant search across all documents
 - ✅ Secure admin dashboard for content management
@@ -64,7 +72,7 @@ USTM Academia eliminates these challenges by providing:
 
 ### Key Value Proposition
 
-🚀 **For Students:** Instant, verified access to PYQs and syllabi — zero friction, no login.
+🚀 **For Students:** Quick, organized access to PYQs and syllabi — no login required.
 🔐 **For Admins:** Centralized content management with Supabase Auth and role-based access.
 📱 **For Everyone:** Fully responsive PWA, optimized for mobile and desktop.
 
@@ -486,7 +494,7 @@ Contributions from developers and the USTM community are welcome!
 
 ## 🙏 Acknowledgements
 
-- **University of Science and Technology Meghalaya (USTM)** — for the vision and support
+- **University of Science and Technology Meghalaya (USTM)** — the academic community this project was built for (no official affiliation)
 - **[Next.js](https://nextjs.org)** — React framework for production
 - **[Supabase](https://supabase.com)** — PostgreSQL backend-as-a-service
 - **[Algolia](https://algolia.com)** — Real-time search engine
@@ -497,13 +505,13 @@ Contributions from developers and the USTM community are welcome!
 
 ### Built By
 
-- **Bakhtiar Abid Laskar** — Lead Developer — [@Bakhtiar-Abid-Laskar](https://github.com/Bakhtiar-Abid-Laskar)
+- **Bakhtiar Abid Laskar** — Student, USTM, and independent developer — [@Bakhtiar-Abid-Laskar](https://github.com/Bakhtiar-Abid-Laskar)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for USTM students**
+**Made with ❤️ by a student, for students. An independent project, not affiliated with USTM.**
 
 [Live Site](https://ustm-academia.vercel.app) · [Report Bug](https://github.com/Bakhtiar-Abid-Laskar/USTM_academia/issues) · [Request Feature](https://github.com/Bakhtiar-Abid-Laskar/USTM_academia/issues)
 
