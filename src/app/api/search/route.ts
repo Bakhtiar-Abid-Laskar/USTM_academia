@@ -2,19 +2,53 @@ import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { searchLimiter, getClientIp, createRateLimitKey } from "@/lib/rate-limit";
 
+export const dynamic = "force-dynamic";
+
 const MAX_SEARCH_LENGTH = 200;
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 18;
 const MAX_LIMIT = 100;
 
-// Shared select columns for all document queries
-const SELECT_COLUMNS = `
-  id, title, year, file_url, is_downloadable, status, created_at,
-  course:courses(id, short_name, slug),
-  semester:semesters(id, label, semester_number),
-  subject:subjects(id, name, slug),
-  document_type:document_types(id, name, slug),
-  exam_type:exam_types(id, name, slug)
-`;
+interface DocumentRow {
+  id: string;
+  title: string;
+  year: number | null;
+  file_url: string | null;
+  is_downloadable: boolean;
+  status: string;
+  created_at: string;
+  course: {
+    id: string;
+    name?: string;
+    short_name?: string;
+    slug?: string;
+  } | null;
+  semester: {
+    id: string;
+    label?: string;
+    semester_number?: number;
+  } | null;
+  subject: {
+    id: string;
+    name?: string;
+    subject_code?: string;
+    slug?: string;
+  } | null;
+  department?: {
+    id: string;
+    name?: string;
+    code?: string;
+  } | null;
+  document_type: {
+    id: number;
+    name?: string;
+    slug?: string;
+  } | null;
+  exam_type: {
+    id: number;
+    name?: string;
+    slug?: string;
+  } | null;
+}
 
 export async function GET(request: NextRequest) {
   // ── Rate limiting ──────────────────────────────────────────────────────────
@@ -31,6 +65,13 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const q = (searchParams.get("q") || "").trim();
+  const filterCourse = searchParams.get("course") || "";
+  const filterDepartment = searchParams.get("department") || "";
+  const filterDocType = searchParams.get("document_type") || searchParams.get("type") || "";
+  const filterExamType = searchParams.get("exam_type") || searchParams.get("exam") || "";
+  const filterYear = searchParams.get("year") || "";
+  const filterSemester = searchParams.get("semester") || "";
+
   const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10));
   const limit = Math.min(
     Math.max(1, parseInt(searchParams.get("limit") || String(DEFAULT_LIMIT), 10)),
@@ -38,7 +79,6 @@ export async function GET(request: NextRequest) {
   );
   const offset = page * limit;
 
-  // ── Validate query length ─────────────────────────────────────────────────
   if (q.length > MAX_SEARCH_LENGTH) {
     return NextResponse.json(
       { error: `Search query exceeds ${MAX_SEARCH_LENGTH} character limit` },
@@ -46,125 +86,253 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const supabase = await createClient();
-
   try {
-    // ── Empty query: return latest published documents ─────────────────────
-    if (q.length === 0) {
-      const { data, error, count } = await supabase
-        .from("documents")
-        .select(SELECT_COLUMNS, { count: "exact" })
-        .eq("status", "published")
-        .order("created_at", { ascending: false })
-        .range(offset, offset + limit - 1);
+    const supabase = await createClient();
 
-      if (error) {
-        console.error("Supabase list error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-
-      const total = count ?? 0;
-      return NextResponse.json({
-        data: data ?? [],
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit),
-        hasNextPage: offset + limit < total,
-        hasPreviousPage: page > 0,
-        query: "",
-      });
-    }
-
-    // ── Full-text search via Supabase ilike (fuzzy on title, subject, course)
-    // Strategy: use direct ilike on joined columns via text search rather than
-    // a stored proc, so we don't depend on the DB having search_documents RPC.
-    // We do two passes:
-    //  1) exact/prefix match on title (highest relevance)
-    //  2) broader ilike across related fields via RPC if available, else fallback
-    // This ensures search ALWAYS works even without RPC.
-
-    // Try the RPC-based full-text search first (more powerful if the proc exists)
-    const { data: rpcResults, error: rpcError } = await supabase.rpc(
-      "search_documents",
-      { search_query: q }
-    );
-
-    let docIds: string[] = [];
-    let totalCount = 0;
-
-    if (!rpcError && Array.isArray(rpcResults) && rpcResults.length > 0) {
-      // RPC succeeded — use ranked IDs
-      docIds = rpcResults.map((r: any) => r.id);
-      totalCount = docIds.length;
-    } else {
-      // RPC unavailable or returned nothing — fallback to multi-field ilike
-      const term = `%${q.replace(/[%_]/g, '\\$&')}%`;
-
-      // Search across title directly on documents table
-      const { data: directHits, error: directError, count } = await supabase
-        .from("documents")
-        .select("id, title, created_at", { count: "exact" })
-        .eq("status", "published")
-        .or(
-          `title.ilike.${term}`
-        )
-        .order("created_at", { ascending: false });
-
-      if (directError) {
-        console.error("Search fallback error:", directError);
-        return NextResponse.json({ error: directError.message }, { status: 500 });
-      }
-
-      docIds = (directHits ?? []).map((r: any) => r.id);
-      totalCount = count ?? docIds.length;
-    }
-
-    if (docIds.length === 0) {
-      return NextResponse.json({
-        data: [],
-        total: 0,
-        page,
-        limit,
-        pages: 0,
-        hasNextPage: false,
-        hasPreviousPage: false,
-        query: q,
-      });
-    }
-
-    // ── Paginate: slice the ranked IDs, then fetch full details ───────────
-    const paginatedIds = docIds.slice(offset, offset + limit);
-
-    const { data, error: fetchError } = await supabase
+    // ── Fetch all published documents with full relations ───────────────────
+    const { data: rawDocs, error } = await supabase
       .from("documents")
-      .select(SELECT_COLUMNS)
-      .in("id", paginatedIds)
-      .eq("status", "published");
+      .select(`
+        id, title, year, file_url, is_downloadable, status, created_at,
+        course:courses(id, name, short_name, slug),
+        semester:semesters(id, label, semester_number),
+        subject:subjects(id, name, subject_code, slug),
+        department:departments(id, name, code),
+        document_type:document_types(id, name, slug),
+        exam_type:exam_types(id, name, slug)
+      `)
+      .eq("status", "published")
+      .order("created_at", { ascending: false });
 
-    if (fetchError) {
-      console.error("Document fetch error:", fetchError);
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    if (error) {
+      console.error("Supabase search fetch error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Restore the ranked order that .in() destroys
-    const idOrder = new Map(paginatedIds.map((id, idx) => [id, idx]));
-    const orderedData = (data ?? []).sort(
-      (a: any, b: any) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0)
-    );
+    const allDocs = (rawDocs || []) as unknown as DocumentRow[];
+
+    // ── Collect Available Filters (Facets) ──────────────────────────────────
+    const filterMaps = {
+      courses: new Map<string, { label: string; value: string; count: number }>(),
+      departments: new Map<string, { label: string; value: string; count: number }>(),
+      documentTypes: new Map<string, { label: string; value: string; count: number }>(),
+      examTypes: new Map<string, { label: string; value: string; count: number }>(),
+      years: new Map<string, { label: string; value: string; count: number }>(),
+    };
+
+    for (const doc of allDocs) {
+      if (doc.course?.short_name || doc.course?.name) {
+        const key = doc.course.short_name || doc.course.name || "";
+        const entry = filterMaps.courses.get(key) || { label: key, value: key, count: 0 };
+        entry.count++;
+        filterMaps.courses.set(key, entry);
+      }
+      if (doc.department?.name) {
+        const key = doc.department.name;
+        const entry = filterMaps.departments.get(key) || { label: key, value: key, count: 0 };
+        entry.count++;
+        filterMaps.departments.set(key, entry);
+      }
+      if (doc.document_type?.name) {
+        const key = doc.document_type.name;
+        const entry = filterMaps.documentTypes.get(key) || { label: key, value: key, count: 0 };
+        entry.count++;
+        filterMaps.documentTypes.set(key, entry);
+      }
+      if (doc.exam_type?.name) {
+        const key = doc.exam_type.name;
+        const entry = filterMaps.examTypes.get(key) || { label: key, value: key, count: 0 };
+        entry.count++;
+        filterMaps.examTypes.set(key, entry);
+      }
+      if (doc.year) {
+        const key = String(doc.year);
+        const entry = filterMaps.years.get(key) || { label: key, value: key, count: 0 };
+        entry.count++;
+        filterMaps.years.set(key, entry);
+      }
+    }
+
+    // ── Apply Explicit Filters ──────────────────────────────────────────────
+    let filtered = allDocs.filter((doc) => {
+      if (filterCourse) {
+        const target = filterCourse.toLowerCase();
+        const cName = doc.course?.name?.toLowerCase() || "";
+        const cShort = doc.course?.short_name?.toLowerCase() || "";
+        const cSlug = doc.course?.slug?.toLowerCase() || "";
+        if (cName !== target && cShort !== target && cSlug !== target) return false;
+      }
+      if (filterDepartment) {
+        const target = filterDepartment.toLowerCase();
+        const dName = doc.department?.name?.toLowerCase() || "";
+        const dCode = doc.department?.code?.toLowerCase() || "";
+        if (dName !== target && dCode !== target) return false;
+      }
+      if (filterDocType) {
+        const target = filterDocType.toLowerCase();
+        const dtName = doc.document_type?.name?.toLowerCase() || "";
+        const dtSlug = doc.document_type?.slug?.toLowerCase() || "";
+        if (dtName !== target && dtSlug !== target) return false;
+      }
+      if (filterExamType) {
+        const target = filterExamType.toLowerCase();
+        const etName = doc.exam_type?.name?.toLowerCase() || "";
+        const etSlug = doc.exam_type?.slug?.toLowerCase() || "";
+        if (etName !== target && etSlug !== target) return false;
+      }
+      if (filterYear) {
+        if (String(doc.year) !== filterYear) return false;
+      }
+      if (filterSemester) {
+        const target = filterSemester.toLowerCase();
+        const semNum = String(doc.semester?.semester_number || "");
+        const semLabel = doc.semester?.label?.toLowerCase() || "";
+        if (semNum !== target && semLabel !== target) return false;
+      }
+      return true;
+    });
+
+    // ── Apply Query & Semantic Ranking (Strong Multi-Field Search) ───────────
+    if (q) {
+      const cleanQ = q.toLowerCase();
+      // Tokenize query words
+      const rawTokens = cleanQ.split(/[\s,._\-\/]+/).filter((t) => t.length > 0);
+
+      // Handle common acronyms & synonyms
+      const tokens: string[] = [];
+      for (const t of rawTokens) {
+        tokens.push(t);
+        if (t === "pyq" || t === "pyqs") tokens.push("previous", "year", "question");
+        if (t === "paper" || t === "papers") tokens.push("question");
+        if (t === "sem") tokens.push("semester");
+      }
+
+      const scoredDocs = filtered.map((doc) => {
+        let score = 0;
+
+        const title = (doc.title || "").toLowerCase();
+        const subjName = (doc.subject?.name || "").toLowerCase();
+        const subjCode = (doc.subject?.subject_code || "").toLowerCase();
+        const courseName = (doc.course?.name || "").toLowerCase();
+        const courseShort = (doc.course?.short_name || "").toLowerCase();
+        const deptName = (doc.department?.name || "").toLowerCase();
+        const semLabel = (doc.semester?.label || "").toLowerCase();
+        const semNum = String(doc.semester?.semester_number || "");
+        const docTypeName = (doc.document_type?.name || "").toLowerCase();
+        const examTypeName = (doc.exam_type?.name || "").toLowerCase();
+        const yearStr = String(doc.year || "");
+
+        // 1. Exact phrase matches (highest relevance)
+        if (title === cleanQ) score += 200;
+        else if (title.startsWith(cleanQ)) score += 120;
+        else if (title.includes(cleanQ)) score += 80;
+
+        if (subjName === cleanQ) score += 150;
+        else if (subjName.includes(cleanQ)) score += 70;
+
+        if (subjCode && subjCode.includes(cleanQ)) score += 90;
+
+        if (courseShort === cleanQ) score += 100;
+        else if (courseShort.includes(cleanQ)) score += 60;
+        else if (courseName.includes(cleanQ)) score += 50;
+
+        if (deptName.includes(cleanQ)) score += 30;
+        if (semLabel.includes(cleanQ)) score += 40;
+        if (docTypeName.includes(cleanQ)) score += 30;
+        if (examTypeName.includes(cleanQ)) score += 25;
+        if (yearStr === cleanQ) score += 40;
+
+        // 2. Token-level matching across all fields
+        let matchedTokens = 0;
+        for (const token of tokens) {
+          let tokenFound = false;
+
+          if (title.includes(token)) {
+            score += 25;
+            tokenFound = true;
+          }
+          if (subjName.includes(token)) {
+            score += 25;
+            tokenFound = true;
+          }
+          if (subjCode && subjCode.includes(token)) {
+            score += 20;
+            tokenFound = true;
+          }
+          if (courseShort.includes(token)) {
+            score += 25;
+            tokenFound = true;
+          }
+          if (courseName.includes(token)) {
+            score += 15;
+            tokenFound = true;
+          }
+          if (semLabel.includes(token) || semNum === token) {
+            score += 20;
+            tokenFound = true;
+          }
+          if (deptName.includes(token)) {
+            score += 10;
+            tokenFound = true;
+          }
+          if (docTypeName.includes(token)) {
+            score += 15;
+            tokenFound = true;
+          }
+          if (examTypeName.includes(token)) {
+            score += 10;
+            tokenFound = true;
+          }
+          if (yearStr.includes(token)) {
+            score += 15;
+            tokenFound = true;
+          }
+
+          if (tokenFound) matchedTokens++;
+        }
+
+        // Bonus if multiple query tokens matched
+        if (matchedTokens > 1) {
+          score += matchedTokens * 20;
+        }
+
+        return { doc, score };
+      });
+
+      // Filter out documents with zero relevance score
+      const matchingScored = scoredDocs.filter((item) => item.score > 0);
+
+      // Sort by score descending, then newest created_at
+      matchingScored.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return new Date(b.doc.created_at).getTime() - new Date(a.doc.created_at).getTime();
+      });
+
+      filtered = matchingScored.map((item) => item.doc);
+    }
+
+    const total = filtered.length;
+    const paginatedData = filtered.slice(offset, offset + limit);
 
     return NextResponse.json({
-      data: orderedData,
-      total: totalCount,
+      data: paginatedData,
+      total,
       page,
       limit,
-      pages: Math.ceil(totalCount / limit),
-      hasNextPage: offset + limit < totalCount,
+      pages: Math.ceil(total / limit),
+      hasNextPage: offset + limit < total,
       hasPreviousPage: page > 0,
       query: q,
+      availableFilters: {
+        courses: Array.from(filterMaps.courses.values()),
+        departments: Array.from(filterMaps.departments.values()),
+        documentTypes: Array.from(filterMaps.documentTypes.values()),
+        examTypes: Array.from(filterMaps.examTypes.values()),
+        years: Array.from(filterMaps.years.values()).sort((a, b) => b.label.localeCompare(a.label)),
+      },
     });
   } catch (err: any) {
-    console.error("Search error:", err);
+    console.error("Search API error:", err);
     return NextResponse.json(
       { error: err.message || "Search failed" },
       { status: 500 }
